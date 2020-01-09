@@ -1,0 +1,22 @@
+{
+ "solution_values": [
+  [
+   "lambda h, i: \"H\" if h[i] == \"H\" else \"D\"",
+   "lambda h, i: \"D\" if h[i] == \"H\" else \"H\"",
+   "lambda h, i: \"H\" if h[i] == \"D\" else \"H\"",
+   "lambda h, i: \"H\""
+  ],
+  [
+   "lambda h, i: \"D\" if h[i] == \"H\" else \"D\"",
+   "lambda h, i: \"H\" if h[i] == \"H\" else \"D\"",
+   "lambda h, i: \"D\" if h[i] == \"D\" else \"H\"",
+   "lambda h, i: \"H\" if h[i] == \"H\" else \"H\""
+  ],
+  [
+   "lambda h, i: \"D\"",
+   "lambda h, i: \"D\" if h[i] == \"H\" else \"D\"",
+   "lambda h, i: \"D\" if h[i] == \"H\" else \"D\"",
+   "lambda h, i: \"H\" if h[i] == \"H\" else \"D\""
+  ]
+ ]
+}
