@@ -1,1 +1,0 @@
-[{"player_1": "['player_1 = lambda h, i: \"D\"\\n']", "player_2": "['player_2 = lambda h, i: \"H\" if h[i] == \"D\" else \"D\"\\n']", "payoffs": [[1.0, 1.0], [0, 2.0], [0, 2.0]], "history": [["D", "D"], ["D", "H"], ["D", "H"]]}]

@@ -383,7 +383,7 @@ def evaluate_fitness(
 
 def variation(parents: List[Individual], param: Dict[str, Any]) -> List[Individual]:
     """
-    Vary individual solutions with crossover and mutation oeprations. Drive the
+    Vary individual solutions with crossover and mutation operations. Drive the
     search by generating variation of the parent solutions.
 
     :param parents: Collection of individual solutions
