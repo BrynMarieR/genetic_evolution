@@ -7,7 +7,7 @@ import copy
 import os
 import random
 import re
-from typing import List, Tuple, Any, Dict, Optional, DefaultDict, Sequence, Union
+from typing import List, Tuple, Any, Dict, Optional, DefaultDict, Sequence, Union, Set
 from numbers import Number
 import json
 
@@ -34,10 +34,14 @@ class Grammar(object):
         :param file_name: grammar file
         :type file_name: str
         """
-        self.rules: collections.OrderedDict = collections.OrderedDict()
+
+        # due to error in pylint, throws unsubscriptable-object for the typing annotation
+        self.rules: collections.OrderedDict[  # pylint: disable=unsubscriptable-object
+            str, List[List[Tuple[str, str]]]
+        ] = collections.OrderedDict()
         # TODO use an ordered set
-        self.non_terminals: set = set()
-        self.terminals: set = set()
+        self.non_terminals: Set[str] = set()
+        self.terminals: Set[str] = set()
         self.start_rule: Tuple[str, str] = ("", "")
         self.file_name: str = file_name
 
@@ -549,7 +553,7 @@ def write_run_output(
         for k, v in param.items():
             if k != "cache":
                 _settings[k] = v
-                
+
         json.dump(_settings, out_file, indent=1)
 
     for k, v in stats.items():
@@ -970,7 +974,14 @@ def get_fitness_function(param: Dict[str, str]) -> FitnessFunction:
     :return: Fitness function
     :rtype: Object
     """
-    from fitness.fitness import SRExpression, SRExemplar, IteratedPrisonersDilemma, IteratedHawkAndDove
+    from fitness.fitness import (
+        SRExpression,
+        SRExemplar,
+        IteratedPrisonersDilemma,
+        IteratedHawkAndDove,
+        IntrusiveHawkAndDove,
+        NonIntrusiveHawkAndDove,
+    )
 
     name = param["name"]
     fitness_function: FitnessFunction
@@ -982,6 +993,10 @@ def get_fitness_function(param: Dict[str, str]) -> FitnessFunction:
         fitness_function = IteratedPrisonersDilemma(param)
     elif name == "HawkAndDove":
         fitness_function = IteratedHawkAndDove(param)
+    elif name == "IntrusiveHawkAndDove":
+        fitness_function = IntrusiveHawkAndDove(param)
+    elif name == "NonIntrusiveHawkAndDove":
+        fitness_function = NonIntrusiveHawkAndDove(param)
     else:
         raise BaseException("Unknown fitness function: {}".format(name))
 

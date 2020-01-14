@@ -6,7 +6,12 @@ from the engagement environment.
 from typing import List, Dict, Any, Tuple, Callable
 
 from fitness.symbolic_regression import SymbolicRegression
-from fitness.game_theory_game import PrisonersDilemma, HawkAndDove
+from fitness.game_theory_game import (
+    PrisonersDilemma,
+    HawkAndDove,
+    IntrusiveHawkAndDoveGame,
+    NonIntrusiveHawkAndDoveGame,
+)
 from heuristics.donkey_ge import Individual, DEFAULT_FITNESS, FitnessFunction
 
 
@@ -144,8 +149,10 @@ class IteratedPrisonersDilemma(FitnessFunction):
         """
         self.n_iterations = param["n_iterations"]
         self.prisoners_dilemma = PrisonersDilemma(self.n_iterations)
-        self.opponent = eval(param["opponent"])  # pylint: disable=eval-used
-        self.player = lambda x, y: ""
+        self.opponent: Callable[[List[str], int], str] = eval(  # pylint: disable=eval-used
+            param["opponent"]
+        )
+        self.player: Callable[[List[str], int], str] = lambda x, y: ""
 
     def __call__(self, fcn_str: str, cache: Dict[str, float]) -> float:
         """ Evaluate the strategy against the opponent and return fitness.
@@ -154,11 +161,7 @@ class IteratedPrisonersDilemma(FitnessFunction):
         if key in cache:
             fitness: float = cache[key]
         else:
-            self.player: Callable[
-                [List[Tuple[str, str]], int], str
-            ] = eval(  # pylint: disable=eval-used
-                fcn_str
-            )
+            self.player = eval(fcn_str)  # pylint: disable=eval-used
             sentences, _ = self.prisoners_dilemma.run(self.player, self.opponent)
             fitness = IteratedPrisonersDilemma.get_fitness(sentences)
             cache[key] = fitness
@@ -177,11 +180,7 @@ class IteratedPrisonersDilemma(FitnessFunction):
         """
         fitnesses: List[float] = [DEFAULT_FITNESS] * len(strategies)
         for i, strategy in enumerate(strategies):
-            self.opponent: Callable[
-                [List[Tuple[str, str]], int], str
-            ] = eval(  # pylint: disable=eval-used
-                strategy.phenotype
-            )
+            self.opponent = eval(strategy.phenotype)  # pylint: disable=eval-used
             fitnesses[i] = self.__call__(fcn_str, cache)
 
         # Mean Expected Utility
@@ -217,11 +216,7 @@ class IteratedHawkAndDove(FitnessFunction):
         if key in cache:
             fitness: float = cache[key]
         else:
-            self.player: Callable[
-                [List[Tuple[str, str]], int], str
-            ] = eval(  # pylint: disable=eval-used
-                fcn_str
-            )
+            self.player = eval(fcn_str)  # pylint: disable=eval-used
             payoff, _ = self.hawk_and_dove.run(self.player, self.opponent)
             fitness = IteratedHawkAndDove.get_fitness(payoff)
             cache[key] = fitness
@@ -240,11 +235,117 @@ class IteratedHawkAndDove(FitnessFunction):
         """
         fitnesses: List[float] = [DEFAULT_FITNESS] * len(strategies)
         for i, strategy in enumerate(strategies):
-            self.opponent: Callable[
-                [List[Tuple[str, str]], int], str
-            ] = eval(  # pylint: disable=eval-used
-                strategy.phenotype
-            )
+            self.opponent = eval(strategy.phenotype)  # pylint: disable=eval-used
+            fitnesses[i] = self.__call__(fcn_str, cache)
+
+        # Mean Expected Utility
+        fitness: float = mean(fitnesses)
+        return fitness
+
+
+class IntrusiveHawkAndDove(FitnessFunction):
+    """
+    Intrusive Hawk and Dove fitness function
+
+    Note: There are faster ways of evaluating, this is for demonstration purposes.
+
+    Attributes:
+        n_iterations: Number of iterations of the game
+        hawk_and_dove: Hawk And Dove game
+        opponent: Strategy of opponent
+        player: Strategy of player
+    """
+
+    def __init__(self, param: Dict[str, Any]) -> None:
+        """ Initialize object
+        """
+        self.n_iterations = param["n_iterations"]
+        self.hawk_and_dove = IntrusiveHawkAndDoveGame(self.n_iterations)
+        self.opponent = eval(param["opponent"])  # pylint: disable=eval-used
+        self.player = lambda x, y: ""
+
+    def __call__(self, fcn_str: str, cache: Dict[str, float]) -> float:
+        """ Evaluate the strategy against the opponent and return fitness.
+        """
+        key: str = "{}-{}".format(fcn_str, self.opponent)
+        if key in cache:
+            fitness: float = cache[key]
+        else:
+            self.player = eval(fcn_str)  # pylint: disable=eval-used
+            payoff, _ = self.hawk_and_dove.run(self.player, self.opponent)
+            fitness = IntrusiveHawkAndDove.get_fitness(payoff)
+            cache[key] = fitness
+
+        return fitness
+
+    @staticmethod
+    def get_fitness(payoffs: List[Tuple[float, float]]) -> float:
+        """ Fitness is the negated sum of the payoff
+        """
+        fitness: float = -sum([_[0] for _ in payoffs])
+        return fitness
+
+    def coev(self, fcn_str: str, strategies: List[Individual], cache: Dict[str, float]) -> float:
+        """ Evaluate one strategy against multiple strategies and mean expected utility (fitness).
+        """
+        fitnesses: List[float] = [DEFAULT_FITNESS] * len(strategies)
+        for i, strategy in enumerate(strategies):
+            self.opponent = eval(strategy.phenotype)  # pylint: disable=eval-used
+            fitnesses[i] = self.__call__(fcn_str, cache)
+
+        # Mean Expected Utility
+        fitness: float = mean(fitnesses)
+        return fitness
+
+
+class NonIntrusiveHawkAndDove(FitnessFunction):
+    """
+    NonIntrusive Hawk and Dove fitness function
+
+    Note: There are faster ways of evaluating, this is for demonstration purposes.
+
+    Attributes:
+        n_iterations: Number of iterations of the game
+        hawk_and_dove: Hawk And Dove game
+        opponent: Strategy of opponent
+        player: Strategy of player
+    """
+
+    def __init__(self, param: Dict[str, Any]) -> None:
+        """ Initialize object
+        """
+        self.n_iterations = param["n_iterations"]
+        self.hawk_and_dove = NonIntrusiveHawkAndDoveGame(self.n_iterations)
+        self.opponent = eval(param["opponent"])  # pylint: disable=eval-used
+        self.player = lambda x, y: ""
+
+    def __call__(self, fcn_str: str, cache: Dict[str, float]) -> float:
+        """ Evaluate the strategy against the opponent and return fitness.
+        """
+        key: str = "{}-{}".format(fcn_str, self.opponent)
+        if key in cache:
+            fitness: float = cache[key]
+        else:
+            self.player = eval(fcn_str)  # pylint: disable=eval-used
+            payoff, _ = self.hawk_and_dove.run(self.player, self.opponent)
+            fitness = NonIntrusiveHawkAndDove.get_fitness(payoff)
+            cache[key] = fitness
+
+        return fitness
+
+    @staticmethod
+    def get_fitness(payoffs: List[Tuple[float, float]]) -> float:
+        """ Fitness is the negated sum of the payoff
+        """
+        fitness: float = -sum([_[0] for _ in payoffs])
+        return fitness
+
+    def coev(self, fcn_str: str, strategies: List[Individual], cache: Dict[str, float]) -> float:
+        """ Evaluate one strategy against multiple strategies and mean expected utility (fitness).
+        """
+        fitnesses: List[float] = [DEFAULT_FITNESS] * len(strategies)
+        for i, strategy in enumerate(strategies):
+            self.opponent = eval(strategy.phenotype)  # pylint: disable=eval-used
             fitnesses[i] = self.__call__(fcn_str, cache)
 
         # Mean Expected Utility

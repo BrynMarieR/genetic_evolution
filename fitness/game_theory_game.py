@@ -34,23 +34,17 @@ class GameTheoryGame:
         raise NotImplementedError("Implement in game")
 
     @staticmethod
-    def get_move(
-        player: Callable[[List[Tuple[str, str]], int], str],
-        history: List[str],
-        iteration: int,
-    ) -> str:
+    def get_move(player: Callable[[List[str], int], str], hist: List[str], iteration: int,) -> str:
         """ Helper function to get the player move.
 
         Player is a function that takes the history and current iteration into account
         """
-        move = player(history, iteration)
+        move = player(hist, iteration)
         return move
 
     def run(
-        self,
-        player_1: Callable[[List[Tuple[str, str]], int], str],
-        player_2: Callable[[List[Tuple[str, str]], int], str],
-    ) -> Tuple[List[Tuple[float, float]], List[Tuple[str, str]]]:
+        self, player_1: Callable[[List[str], int], str], player_2: Callable[[List[str], int], str],
+    ) -> Tuple[List[Tuple[float, float]], Dict[str, List[str]]]:
         """Return the payoff for each iteration of the game.
         """
         history: Dict[str, List[str]] = {
@@ -61,12 +55,11 @@ class GameTheoryGame:
         _payoff = self.get_payoff()
         for i in range(self.n_iterations):
             move_1 = GameTheoryGame.get_move(player_1, history["player_2"], i)
-            history["player_1"].append(move_1)
             move_2 = GameTheoryGame.get_move(player_2, history["player_1"], i)
+            history["player_1"].append(move_1)
             history["player_2"].append(move_2)
             moves = (move_1, move_2)
             payoffs.append(_payoff[moves])
-
 
         if self.store_stats:
             self.dump_stats(player_1, player_2, payoffs, history)
@@ -82,10 +75,10 @@ class GameTheoryGame:
 
     def dump_stats(
         self,
-        player_1: Callable[[List[Tuple[str, str]], int], str],
-        player_2: Callable[[List[Tuple[str, str]], int], str],
+        player_1: Callable[[List[str], int], str],
+        player_2: Callable[[List[str], int], str],
         payoffs: List[Tuple[float, float]],
-            history: Dict[str, List[str]],
+        history: Dict[str, List[str]],
     ) -> None:
         """ Append run statistics to JSON file.
 
@@ -131,7 +124,8 @@ class PrisonersDilemma(GameTheoryGame):
         return PrisonersDilemma.PAYOFF
 
 
-# TODO  Implement game from 'Ecotypic variation in the asymmetric Hawk-Dove game: when is Bourgeois an evolutionarily stable strategy?', Michael Mesterton-Gibbons
+# TODO  Implement game from 'Ecotypic variation in the asymmetric Hawk-Dove game: when is Bourgeois
+#  an evolutionarily stable strategy?', Michael Mesterton-Gibbons
 class HawkAndDove(GameTheoryGame):
     """
     Hawk And Dove game, see https://en.wikipedia.org/wiki/Chicken_(game)
@@ -148,8 +142,88 @@ class HawkAndDove(GameTheoryGame):
         (DOVE, HAWK): (0, V),
         (DOVE, DOVE): (V / 2.0, V / 2.0),
     }
-    DEFAULT_OUT_FILE: str = "had_stats.json"
+    DEFAULT_OUT_FILE: str = "hd_stats.json"
 
     def get_payoff(self) -> Dict[Tuple[str, str], Tuple[float, float]]:
         """Return payoff for each strategy combination."""
         return HawkAndDove.PAYOFF
+
+
+class IntrusiveHawkAndDoveGame(GameTheoryGame):
+    """
+    Hawk And Dove game, see 'Ecotypic variation in the asymmetric Hawk-Dove game: when is Bourgeois
+    an evolutionarily stable strategy?', Michael Mesterton-Gibbons
+
+    """
+
+    HAWK: str = "H"
+    DOVE: str = "D"
+    BOUR: str = "B"
+    ANTI: str = "X"
+
+    V: float = 2.0
+    C: float = 4.0
+
+    PAYOFF: Dict[Tuple[str, str], Tuple[float, float]] = {
+        (HAWK, HAWK): ((V - C) / 2.0, (V - C) / 2.0),
+        (HAWK, BOUR): ((3 * V - C) / 4.0, (V - C) / 4.0),
+        (HAWK, ANTI): ((3 * V - C) / 4.0, (V - C) / 4.0),
+        (HAWK, DOVE): (V, 0),
+        (BOUR, HAWK): ((V - C) / 4.0, (3 * V - C) / 4.0),
+        (BOUR, BOUR): (V / 2.0, V / 2.0),
+        (BOUR, ANTI): ((2 * V - C) / 4.0, (2 * V - C) / 4.0),
+        (BOUR, DOVE): (3 * V / 4.0, V / 4.0),
+        (ANTI, HAWK): ((V - C) / 4.0, (3 * V - C) / 4.0),
+        (ANTI, BOUR): ((2 * V - C) / 4.0, (2 * V - C) / 4.0),
+        (ANTI, ANTI): (V / 2.0, V / 2.0),
+        (ANTI, DOVE): (3 * V / 4.0, V / 4.0),
+        (DOVE, HAWK): (0, V),
+        (DOVE, BOUR): (V / 4.0, 3 * V / 4.0),
+        (DOVE, ANTI): (V / 4.0, 3 * V / 4.0),
+        (DOVE, DOVE): (V / 2.0, V / 2.0),
+    }
+    DEFAULT_OUT_FILE: str = "intrusive_hd_stats.json"
+
+    def get_payoff(self) -> Dict[Tuple[str, str], Tuple[float, float]]:
+        """Return payoff for each strategy combination."""
+        return IntrusiveHawkAndDoveGame.PAYOFF
+
+
+class NonIntrusiveHawkAndDoveGame(GameTheoryGame):
+    """
+    Hawk And Dove game, see 'Ecotypic variation in the asymmetric Hawk-Dove game: when is Bourgeois
+    an evolutionarily stable strategy?', Michael Mesterton-Gibbons
+
+    """
+
+    HAWK: str = "H"
+    DOVE: str = "D"
+    BOUR: str = "B"
+    ANTI: str = "X"
+
+    V: float = 2.0
+    C: float = 4.0
+
+    PAYOFF: Dict[Tuple[str, str], Tuple[float, float]] = {
+        (HAWK, HAWK): ((V - C) / 2.0, (V - C) / 2.0),
+        (HAWK, BOUR): ((3 * V - C) / 4.0, (V - C) / 4.0),
+        (HAWK, ANTI): ((3 * V - C) / 4.0, (V - C) / 4.0),
+        (HAWK, DOVE): (V, 0),
+        (BOUR, HAWK): ((V - C) / 4.0, (3 * V - C) / 4.0),
+        (BOUR, BOUR): (V / 2.0, V / 2.0),
+        (BOUR, ANTI): ((V - C) / 4.0, (3 * V - C) / 4.0),
+        (BOUR, DOVE): (V / 2.0, V / 2.0),
+        (ANTI, HAWK): ((V - C) / 4.0, (3 * V - C) / 4.0),
+        (ANTI, BOUR): ((3 * V - C) / 4.0, (V - C) / 4.0),
+        (ANTI, ANTI): (V / 2.0, V / 2.0),
+        (ANTI, DOVE): (V, 0),
+        (DOVE, HAWK): (0, V),
+        (DOVE, BOUR): (V / 2.0, V / 2.0),
+        (DOVE, ANTI): (0, V),
+        (DOVE, DOVE): (V / 2.0, V / 2.0),
+    }
+    DEFAULT_OUT_FILE: str = "nonintrusive_hd_stats.json"
+
+    def get_payoff(self) -> Dict[Tuple[str, str], Tuple[float, float]]:
+        """Return payoff for each strategy combination."""
+        return NonIntrusiveHawkAndDoveGame.PAYOFF

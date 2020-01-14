@@ -1,0 +1,6 @@
+<strategy> ::= lambda h, i: <choice>
+<choice> ::= <hawk> | <dove> | <bourgeois> | <antibourgeois>
+<hawk> ::= "H"
+<dove> ::= "D"
+<bourgeois> ::= "B"
+<antibourgeois> ::= "X"
