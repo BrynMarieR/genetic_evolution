@@ -33,6 +33,7 @@ class GameTheoryGame:
     def get_payoff(self) -> Dict[Tuple[str, str], Tuple[float, float]]:
         raise NotImplementedError("Implement in game")
 
+    # overload in subclass to get different player behavior based on state
     @staticmethod
     def get_move(
         player: Callable[[List[str], int], str],
@@ -56,6 +57,7 @@ class GameTheoryGame:
         # more complicated states may be defined in subclasses
         # e.g., add in concept of ownership as parameter to players that may
         # persist over time for a single player.
+        # TODO leverage more complete history
         state: Dict[str, Dict[str, List[Any]]] = {
             "player_1": {"strategy_history": [""] * self.memory_size},
             "player_2": {"strategy_history": [""] * self.memory_size},

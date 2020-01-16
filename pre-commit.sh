@@ -28,7 +28,7 @@ if [ $exit_status -gt 0 ]; then
     exit 1
 fi
 echo "MyPy\n"
-mypy --strict ${python_files}
+mypy --strict --ignore-missing-imports ${python_files}
 exit_status=$?
 if [ $exit_status -gt 0 ]; then
     echo "mypy messages.:)"
