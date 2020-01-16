@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple, Callable
+from typing import List, Dict, Tuple, Callable, Any
 import json
 import inspect
 
@@ -17,7 +17,7 @@ class GameTheoryGame:
         n_iterations: int = 1,
         memory_size: int = 1,
         store_stats: bool = False,
-        out_file_name: str = "",
+        out_file_name: str = "tmp_out.json",
     ) -> None:
         """ Constructor
         """
@@ -34,62 +34,70 @@ class GameTheoryGame:
         raise NotImplementedError("Implement in game")
 
     @staticmethod
-    def get_move(player: Callable[[List[str], int], str], hist: List[str], iteration: int,) -> str:
+    def get_move(
+        player: Callable[[List[str], int], str],
+        state: Dict[str, Dict[str, List[Any]]],
+        iteration: int,
+        opponent: str,
+    ) -> str:
         """ Helper function to get the player move.
 
         Player is a function that takes the history and current iteration into account
         """
-        move = player(hist, iteration)
+        move = player(state[opponent]["strategy_history"], iteration)
         return move
 
     def run(
         self, player_1: Callable[[List[str], int], str], player_2: Callable[[List[str], int], str],
-    ) -> Tuple[List[Tuple[float, float]], Dict[str, List[str]]]:
+    ) -> Tuple[List[Tuple[float, float]], Dict[str, Dict[str, List[Any]]]]:
         """Return the payoff for each iteration of the game.
         """
-        history: Dict[str, List[str]] = {
-            "player_1": [""] * self.memory_size,
-            "player_2": [""] * self.memory_size,
+
+        # more complicated states may be defined in subclasses
+        # e.g., add in concept of ownership as parameter to players that may
+        # persist over time for a single player.
+        state: Dict[str, Dict[str, List[Any]]] = {
+            "player_1": {"strategy_history": [""] * self.memory_size},
+            "player_2": {"strategy_history": [""] * self.memory_size},
         }
+
         payoffs: List[Tuple[float, float]] = []
         _payoff = self.get_payoff()
         for i in range(self.n_iterations):
-            move_1 = GameTheoryGame.get_move(player_1, history["player_2"], i)
-            move_2 = GameTheoryGame.get_move(player_2, history["player_1"], i)
-            history["player_1"].append(move_1)
-            history["player_2"].append(move_2)
+            move_1 = GameTheoryGame.get_move(player_1, state, i, opponent="player_2")
+            move_2 = GameTheoryGame.get_move(player_2, state, i, opponent="player_2")
+            # add player move to history
+            if i == 0:
+                state["player_1"]["strategy_history"] = [move_1]
+                state["player_2"]["strategy_history"] = [move_2]
+            else:
+                state["player_1"]["strategy_history"].append(move_1)
+                state["player_2"]["strategy_history"].append(move_2)
             moves = (move_1, move_2)
             payoffs.append(_payoff[moves])
 
         if self.store_stats:
-            self.dump_stats(player_1, player_2, payoffs, history)
+            self.dump_stats(player_1, player_2, payoffs, state)
 
-        return payoffs, history
-
-    def revise_history(self, history: Dict[str, List[str]]) -> List[Tuple[str, str]]:
-        revised_history: List[Tuple[str, str]] = []
-        for i in range(self.memory_size, len(history["player_1"])):
-            revised_history.append((history["player_1"][i], history["player_2"][i]))
-
-        return revised_history
+        return payoffs, state
 
     def dump_stats(
         self,
         player_1: Callable[[List[str], int], str],
         player_2: Callable[[List[str], int], str],
         payoffs: List[Tuple[float, float]],
-        history: Dict[str, List[str]],
+        state: Dict[str, Dict[str, List[Any]]],
     ) -> None:
         """ Append run statistics to JSON file.
 
         Note, File IO can be slow.
         """
-        revised_history: List[Tuple[str, str]] = self.revise_history(history)
+
         data = {
             "player_1": str(inspect.getsourcelines(player_1)[0]),
             "player_2": str(inspect.getsourcelines(player_2)[0]),
             "payoffs": payoffs,
-            "history": revised_history,
+            "history": state,
         }
         with open(self.out_file_name, "r") as in_file:
             json_data = json.load(in_file)
