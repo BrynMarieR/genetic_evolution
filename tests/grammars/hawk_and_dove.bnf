@@ -3,5 +3,5 @@
 <varying> ::= [<choice>, <choice>, <choice>, <choice>]
 <hawk> ::= "H"
 <dove> ::= "D"
-<adaptive> ::= <choice> if h[i] == <choice> else <choice>
+<adaptive> ::= <choice> if i == 0 else (<choice> if h[i-1] == <choice> else <choice>)
 <choice> ::= "H" | "D"

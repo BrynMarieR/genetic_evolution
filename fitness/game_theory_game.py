@@ -117,9 +117,9 @@ class PrisonersDilemma(GameTheoryGame):
 
     COOPERATE: str = "C"
     DEFECT: str = "D"
-    R: float = 1.0  # Reward
-    P: float = 2.0  # Penalty
-    S: float = 3.0  # Sucker
+    R: float = -1.0  # Reward
+    P: float = -2.0  # Penalty
+    S: float = -3.0  # Sucker
     T: float = 0.0  # Temptation
     PAYOFF: Dict[Tuple[str, str], Tuple[float, float]] = {
         (COOPERATE, COOPERATE): (R, R),

@@ -1,7 +1,7 @@
-<strategy> ::= lambda h, i: <fixed> | lambda h, i: <adaptive>
+<strategy> ::= lambda h, i: <fixed>
 <fixed> ::= <varying>[i % 4] | <cooperate> | <defect>
 <varying> ::= [<choice>, <choice>, <choice>, <choice>]
 <cooperate> ::= "C"
 <defect> ::= "D"
-<adaptive> ::= <choice> if h[i] == <choice> else <choice>
+<adaptive> ::= <choice> if i == 0 else (<choice> if h[i-1] == <choice> else <choice>)
 <choice> ::= "C" | "D"

@@ -1,0 +1,4 @@
+<strategy> ::= lambda h, i: <fixed>
+<fixed> ::= <cooperate> | <defect>
+<cooperate> ::= "C"
+<defect> ::= "D"
