@@ -37,7 +37,7 @@ def plot_fitness(out_path: str = ".", in_path: str = ".",) -> None:
             plt.savefig(os.path.join(out_path, plot_name))
 
 
-def plot_population_freqs(out_path: str = ".", in_path: str = ".",) -> None:
+def plot_population_freqs(out_path: str = ".", in_path: str = ".", title: str = "") -> None:
     """
     Plot the population frequencies over all generations
     """
@@ -63,7 +63,7 @@ def plot_population_freqs(out_path: str = ".", in_path: str = ".",) -> None:
             df = pd.melt(pd.DataFrame(freq_mat, columns=legend_items))
             df["generation"] = [i for i in range(len(data["solution_values"]))] * len(legend_items)
 
-            sns.lineplot(x="generation", y="value", hue="variable", data=df)
+            sns.lineplot(x="generation", y="value", hue="variable", data=df).set_title(title)
             plot_name = _file.replace(".json", ".pdf")
             plt.savefig(os.path.join(out_path, plot_name))
 

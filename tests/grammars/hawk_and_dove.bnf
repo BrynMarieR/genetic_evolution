@@ -1,5 +1,5 @@
 <strategy> ::= lambda h, i: <fixed> | lambda h, i: <adaptive>
-<fixed> ::= <varying>[i] | <dove> | <hawk>
+<fixed> ::= <varying>[i % 4] | <dove> | <hawk>
 <varying> ::= [<choice>, <choice>, <choice>, <choice>]
 <hawk> ::= "H"
 <dove> ::= "D"

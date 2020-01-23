@@ -1,9 +1,8 @@
-population_size: 100
-max_length: 10
-elite_size: 10
-generations: 5
+population_size: 50
+max_length: 15
+elite_size: 20
+generations: 15
 tournament_size: 2
-seed: 1
 crossover_probability: 0.8
 mutation_probability: 0.1
 codon_size: 127
@@ -12,4 +11,4 @@ bnf_grammar: "tests/grammars/simple_hawk_dove.bnf"
 fitness_function:
     name: "IntrusiveHawkAndDove"
     opponent: "lambda h, i: 'B'"
-    n_iterations: 4
+    n_iterations: 1

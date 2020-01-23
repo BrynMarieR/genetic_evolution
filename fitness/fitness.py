@@ -170,9 +170,9 @@ class IteratedPrisonersDilemma(FitnessFunction):
 
     @staticmethod
     def get_fitness(sentences: List[Tuple[float, float]]) -> float:
-        """ Fitness is the negated sum of the sentences
+        """ Fitness is the mean of the sentences
         """
-        fitness: float = -sum([_[0] for _ in sentences])
+        fitness: float = mean([_[0] for _ in sentences])
         return fitness
 
     def coev(self, fcn_str: str, strategies: List[Individual], cache: Dict[str, float]) -> float:
@@ -225,9 +225,9 @@ class IteratedHawkAndDove(FitnessFunction):
 
     @staticmethod
     def get_fitness(payoffs: List[Tuple[float, float]]) -> float:
-        """ Fitness is the negated sum of the payoff
+        """ Fitness is the mean of the payoff
         """
-        fitness: float = -sum([_[0] for _ in payoffs])
+        fitness: float = mean([_[0] for _ in payoffs])
         return fitness
 
     def coev(self, fcn_str: str, strategies: List[Individual], cache: Dict[str, float]) -> float:
@@ -280,9 +280,9 @@ class IntrusiveHawkAndDove(FitnessFunction):
 
     @staticmethod
     def get_fitness(payoffs: List[Tuple[float, float]]) -> float:
-        """ Fitness is the negated sum of the payoff
+        """ Fitness is the mean of the payoff
         """
-        fitness: float = -sum([_[0] for _ in payoffs])
+        fitness: float = mean([_[0] for _ in payoffs])
         return fitness
 
     def coev(self, fcn_str: str, strategies: List[Individual], cache: Dict[str, float]) -> float:
@@ -335,9 +335,9 @@ class NonIntrusiveHawkAndDove(FitnessFunction):
 
     @staticmethod
     def get_fitness(payoffs: List[Tuple[float, float]]) -> float:
-        """ Fitness is the negated sum of the payoff
+        """ Fitness is the average of the payoff
         """
-        fitness: float = -sum([_[0] for _ in payoffs])
+        fitness: float = mean([_[0] for _ in payoffs])
         return fitness
 
     def coev(self, fcn_str: str, strategies: List[Individual], cache: Dict[str, float]) -> float:
