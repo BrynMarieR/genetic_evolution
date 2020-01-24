@@ -42,9 +42,10 @@ def plot_population_freqs(out_path: str = ".", in_path: str = ".", title: str = 
     Plot the population frequencies over all generations
     """
     files: List[str] = os.listdir(in_path)
+    good_files: List[str] = [i for i in files if "solution_values.json" in i]
 
-    for _file in files:
-        if _file == "donkey_ge_solution_values.json":
+    if len(good_files) > 0:
+        for _file in good_files:
             file_path: str = os.path.join(in_path, _file)
             with open(file_path, "r") as in_file:
                 data = json.load(in_file)
@@ -66,6 +67,7 @@ def plot_population_freqs(out_path: str = ".", in_path: str = ".", title: str = 
             sns.lineplot(x="generation", y="value", hue="variable", data=df).set_title(title)
             plot_name = _file.replace(".json", ".pdf")
             plt.savefig(os.path.join(out_path, plot_name))
+            plt.clf()
 
 
 if __name__ == "__main__":

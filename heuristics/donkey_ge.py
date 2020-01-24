@@ -311,12 +311,15 @@ class FitnessFunction(object):
     Fitness function abstract class
     """
 
-    def __call__(self, fcn_str: str, cache: Dict[str, float]) -> float:
+    def __call__(self, fcn_str: str, strat_str: str, cache: Dict[str, float]) -> float:
         raise NotImplementedError("Define in subclass")
 
 
 def evaluate(
-    individual: Individual, fitness_function: FitnessFunction, cache: Dict[str, float]
+    individual: Individual,
+    opponent_str: str,
+    fitness_function: FitnessFunction,
+    cache: Dict[str, float],
 ) -> Individual:
     """Evaluates phenotype in fitness_function function and sets fitness_function.
 
@@ -330,7 +333,8 @@ def evaluate(
     :rtype: Individual
     """
 
-    individual.fitness = fitness_function(individual.phenotype, cache)
+    # in the non-coevolution case, the opponent is passed as just a string
+    individual.fitness = fitness_function(individual.phenotype, opponent_str, cache)
 
     assert individual.fitness is not None
 
@@ -378,7 +382,7 @@ def evaluate_fitness(
     for ind in individuals:
         map_input_with_grammar(ind, grammar)
         # Execute the fitness function
-        evaluate(ind, fitness_function, cache)
+        evaluate(ind, param["fitness_function"]["opponent"], fitness_function, cache)
 
     assert n_individuals == len(individuals), "{} != {}".format(n_individuals, len(individuals))
 
@@ -516,7 +520,8 @@ def print_cache_stats(generation: int, param: Dict[str, Any]) -> None:
         _hist[str(v)] += 1
 
     print(
-        "Cache entries:{} Total Fitness Evaluations:{} Fitness Values:{}".format(
+        "Cache:{} Cache entries:{} Total Fitness Evaluations:{} Fitness Values:{}".format(
+            param["cache"],
             len(param["cache"].keys()),
             generation * param["population_size"] ** 2,
             len(_hist.keys()),
@@ -975,8 +980,6 @@ def get_fitness_function(param: Dict[str, str]) -> FitnessFunction:
     :rtype: Object
     """
     from fitness.fitness import (
-        SRExpression,
-        SRExemplar,
         IteratedPrisonersDilemma,
         IteratedHawkAndDove,
         IntrusiveHawkAndDove,
@@ -985,11 +988,7 @@ def get_fitness_function(param: Dict[str, str]) -> FitnessFunction:
 
     name = param["name"]
     fitness_function: FitnessFunction
-    if name == "SRExpression":
-        fitness_function = SRExpression(param)
-    elif name == "SRExemplar":
-        fitness_function = SRExemplar(param)
-    elif name == "IteratedPrisonersDilemma":
+    if name == "IteratedPrisonersDilemma":
         fitness_function = IteratedPrisonersDilemma(param)
     elif name == "HawkAndDove":
         fitness_function = IteratedHawkAndDove(param)

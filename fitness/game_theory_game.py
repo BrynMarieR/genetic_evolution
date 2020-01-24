@@ -134,8 +134,6 @@ class PrisonersDilemma(GameTheoryGame):
         return PrisonersDilemma.PAYOFF
 
 
-# TODO  Implement game from 'Ecotypic variation in the asymmetric Hawk-Dove game: when is Bourgeois
-#  an evolutionarily stable strategy?', Michael Mesterton-Gibbons
 class HawkAndDove(GameTheoryGame):
     """
     Hawk And Dove game, see https://en.wikipedia.org/wiki/Chicken_(game)
@@ -171,8 +169,8 @@ class IntrusiveHawkAndDoveGame(GameTheoryGame):
     BOUR: str = "B"
     ANTI: str = "X"
 
-    V: float = 4.0
-    C: float = 2.0
+    V: float = 2.0
+    C: float = 4.0
 
     PAYOFF: Dict[Tuple[str, str], Tuple[float, float]] = {
         (HAWK, HAWK): ((V - C) / 2.0, (V - C) / 2.0),
@@ -211,8 +209,8 @@ class NonIntrusiveHawkAndDoveGame(GameTheoryGame):
     BOUR: str = "B"
     ANTI: str = "X"
 
-    V: float = 4.0
-    C: float = 2.0
+    V: float = 2.0
+    C: float = 4.0
 
     PAYOFF: Dict[Tuple[str, str], Tuple[float, float]] = {
         (HAWK, HAWK): ((V - C) / 2.0, (V - C) / 2.0),

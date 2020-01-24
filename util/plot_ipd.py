@@ -37,11 +37,15 @@ def plot_iterated_prisoners_dilemma(
     total_node_name: Callable[[int], str] = "t_{}".format
     total: float = 0
     history_colors: List[str] = []
-    SENTENCE_COLOR_MAP = plt.cm.RdYlGn(np.linspace(0, 1, len(PrisonersDilemma.PAYOFF) + 1))
+    gradient1 = np.linspace(0, 1, len(PrisonersDilemma.PAYOFF) + 1)
+    cmap = plt.cm.get_cmap("Spectral")
+    SENTENCE_COLOR_MAP = cmap(gradient1)
     sentence_colors: List[str] = []
     total_colors: List[str] = []
-    total_max: float = sum([sum(_) for _ in sentences])
-    total_color_map = plt.cm.RdYlGn(np.linspace(0, 1, int(total_max) + 1))
+    # TODO: generalize to work for cases where _ in sentences > 0
+    total_max: float = sum([abs(sum(_)) for _ in sentences])
+    gradient2 = np.linspace(0, 1, int(total_max) + 1)
+    total_color_map = cmap(gradient2)
     assert len(histories) == len(sentences)
     for i in range(len(histories)):
         history = histories[i]

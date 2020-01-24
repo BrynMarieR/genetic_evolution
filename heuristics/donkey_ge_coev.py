@@ -16,6 +16,7 @@ from heuristics.donkey_ge import (
     variation,
     generational_replacement,
     Grammar,
+    FitnessFunction,
     initialise_population,
     parse_arguments,
     Population,
@@ -104,7 +105,7 @@ def evaluate(
 def evaluate_fitness(
     individuals: List[Individual],
     grammar: Grammar,
-    fitness_function: Any,
+    fitness_function: FitnessFunction,
     adversaries: List[Individual],
     param: Dict[str, Any],
 ) -> List[Individual]:
@@ -132,7 +133,7 @@ def evaluate_fitness(
         # TODO map only once
         map_input_with_grammar(ind, grammar)
         assert ind.phenotype
-        if ind.phenotype is not "":
+        if ind.phenotype != "":
             # Execute the fitness function
             evaluate(ind, fitness_function, adversaries, cache)
             assert ind.fitness is not None
@@ -313,7 +314,7 @@ def run(param: Dict[str, Any]) -> Dict[str, Individual]:
     ###########################
     # Create initial population
     ###########################
-    populations: OrderedDict = OrderedDict()
+    populations: OrderedDict[str, Any] = OrderedDict()  # pylint: disable=unsubscriptable-object
     for key in param["populations"].keys():
         p_dict = param["populations"][key]
         grammar = Grammar(p_dict["bnf_grammar"])
