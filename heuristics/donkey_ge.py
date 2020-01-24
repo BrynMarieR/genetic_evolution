@@ -990,7 +990,7 @@ def get_fitness_function(param: Dict[str, str]) -> FitnessFunction:
     fitness_function: FitnessFunction
     if name == "IteratedPrisonersDilemma":
         fitness_function = IteratedPrisonersDilemma(param)
-    elif name == "HawkAndDove":
+    elif name == "IteratedHawkAndDove":
         fitness_function = IteratedHawkAndDove(param)
     elif name == "IntrusiveHawkAndDove":
         fitness_function = IntrusiveHawkAndDove(param)

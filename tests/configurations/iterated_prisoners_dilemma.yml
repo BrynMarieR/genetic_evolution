@@ -10,5 +10,5 @@ integer_input_element_max: 1000
 bnf_grammar: "tests/grammars/simple_iterated_prisoners_dilemma.bnf"
 fitness_function:
     name: "IteratedPrisonersDilemma"
-    opponent: "lambda h, i: 'C'"
+    opponent: "lambda h, i: 'D'"
     n_iterations: 4

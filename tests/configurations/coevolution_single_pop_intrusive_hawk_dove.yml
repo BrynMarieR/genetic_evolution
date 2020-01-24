@@ -1,6 +1,6 @@
 population_size: 100
 max_length: 100
-generations: 50
+generations: 40
 tournament_size: 2
 crossover_probability: 0.8
 mutation_probability: 0.1
@@ -10,16 +10,9 @@ elite_size: 95
 
 populations:
   attacker:
-    adversary: defender
-    bnf_grammar: "tests/grammars/simple_hawk_dove.bnf"
-    fitness_function:
-      name: "IntrusiveHawkAndDove"
-      opponent: None
-      n_iterations: 1
-  defender:
     adversary: attacker
     bnf_grammar: "tests/grammars/simple_hawk_dove.bnf"
     fitness_function:
-      name: "IntrusiveHawkAndDove"
+      name: "IteratedHawkAndDove"
       opponent: None
       n_iterations: 1

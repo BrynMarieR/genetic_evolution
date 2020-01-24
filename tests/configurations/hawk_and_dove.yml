@@ -1,9 +1,8 @@
-population_size: 4
+population_size: 100
 max_length: 10
-elite_size: 1
-generations: 3
+elite_size: 14
+generations: 10
 tournament_size: 2
-seed: 1
 crossover_probability: 0.8
 mutation_probability: 0.1
 codon_size: 127

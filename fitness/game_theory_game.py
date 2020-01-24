@@ -143,7 +143,7 @@ class HawkAndDove(GameTheoryGame):
     HAWK: str = "H"
     DOVE: str = "D"
     V: float = 2.0
-    C: float = 4.0
+    C: float = 10.0
     PAYOFF: Dict[Tuple[str, str], Tuple[float, float]] = {
         (HAWK, HAWK): ((V - C) / 2.0, (V - C) / 2.0),
         (HAWK, DOVE): (V, 0),
@@ -170,7 +170,7 @@ class IntrusiveHawkAndDoveGame(GameTheoryGame):
     ANTI: str = "X"
 
     V: float = 2.0
-    C: float = 4.0
+    C: float = 10.0
 
     PAYOFF: Dict[Tuple[str, str], Tuple[float, float]] = {
         (HAWK, HAWK): ((V - C) / 2.0, (V - C) / 2.0),
@@ -210,7 +210,7 @@ class NonIntrusiveHawkAndDoveGame(GameTheoryGame):
     ANTI: str = "X"
 
     V: float = 2.0
-    C: float = 4.0
+    C: float = 10.0
 
     PAYOFF: Dict[Tuple[str, str], Tuple[float, float]] = {
         (HAWK, HAWK): ((V - C) / 2.0, (V - C) / 2.0),
