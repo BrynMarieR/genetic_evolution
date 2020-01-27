@@ -1,3 +1,5 @@
+# type: ignore
+
 import hypothesis
 import hypothesis.strategies as hs
 import os
@@ -5,8 +7,11 @@ import random
 import string
 import unittest
 
-import heuristics.donkey_ge
-from heuristics import donkey_ge
+from heuristics import ge_run
+from heuristics import ge_helpers
+from heuristics import population
+from heuristics import grammar
+from fitness import fitness
 
 
 def get_run_param():
@@ -37,17 +42,17 @@ def get_run_param():
 
 
 def get_individual():
-    donkey_ge.Individual.max_length = hs.integers(min_value=1, max_value=128)
-    donkey_ge.Individual.codon_size = hs.integers(min_value=1, max_value=128)
-    individual = hs.builds(donkey_ge.Individual, hs.just(None))
+    population.Individual.max_length = hs.integers(min_value=1, max_value=128)
+    population.Individual.codon_size = hs.integers(min_value=1, max_value=128)
+    individual = hs.builds(population.Individual, hs.just(None))
     return individual
 
 
-def get_individual_with_fitness(genome, codon_size, max_length, fitness, rnd, used_input=None):
-    donkey_ge.Individual.codon_size = codon_size
-    donkey_ge.Individual.max_length = max_length
-    individual = donkey_ge.Individual(genome)
-    individual.fitness = fitness
+def get_individual_with_fitness(genome, codon_size, max_length, fit, used_input=None):
+    population.Individual.codon_size = codon_size
+    population.Individual.max_length = max_length
+    individual = population.Individual(genome)
+    individual.fitness = fit
     individual.used_input = used_input
     return individual
 
@@ -64,7 +69,6 @@ def get_individuals(n=None, used_input=hs.just(None)):
                 hs.integers(min_value=1, max_value=128),
                 hs.integers(min_value=1, max_value=128),
                 hs.integers(),
-                hs.random_module(),
                 used_input,
             ),
             max_size=x,
@@ -101,14 +105,10 @@ def get_tournament_selection():
     _m = hs.shared(n, "same")
     population_size = hs.shared(n, "same")
     tournament_size = _m.flatmap(lambda x: hs.integers(min_value=1, max_value=x))
-    population = _n.flatmap(lambda x: get_individuals(hs.just(x)))
+    pop = _n.flatmap(lambda x: get_individuals(hs.just(x)))
 
     return hs.fixed_dictionaries(
-        {
-            "population": population,
-            "population_size": population_size,
-            "tournament_size": tournament_size,
-        }
+        {"population": pop, "population_size": population_size, "tournament_size": tournament_size}
     )
 
 
@@ -121,7 +121,6 @@ def get_int_flip_mutation():
         hs.integers(min_value=1, max_value=128),
         hs.integers(min_value=1, max_value=128),
         hs.integers(),
-        hs.random_module(),
     )
 
     return hs.fixed_dictionaries(
@@ -150,7 +149,7 @@ def get_variation():
     return param
 
 
-def write_rule_str(n_non_terminals, n_terminals, rnd):
+def write_rule_str(n_non_terminals, n_terminals):
     def get_characters(alphabet, _n=None):
         if _n is None:
             _n = random.randint(0, 10)
@@ -177,12 +176,12 @@ def write_rule_str(n_non_terminals, n_terminals, rnd):
             _str = "".join(_ws)
             return _str
 
-        rule_separator = donkey_ge.Grammar.rule_separator
+        rule_separator = grammar.Grammar.rule_separator
         strs = ""
         for i in range(n_productions):
             production = []
             n_symbols = random.randint(1, 10)
-            for j in range(n_symbols):
+            for _ in range(n_symbols):
                 try:
                     if random.random() < 0.5:
                         symbol = random.choice(terminals)
@@ -196,7 +195,7 @@ def write_rule_str(n_non_terminals, n_terminals, rnd):
             # TODO efficient string building in python...
             production = "".join(production)
             if i < (n_productions - 1):
-                production_separator = donkey_ge.Grammar.production_separator
+                production_separator = grammar.Grammar.production_separator
             else:
                 production_separator = ""
 
@@ -218,14 +217,14 @@ def write_rule_str(n_non_terminals, n_terminals, rnd):
         return _str
 
     non_terminals = []
-    for i in range(n_non_terminals):
+    for _ in range(n_non_terminals):
         size = random.randint(1, 10)
         nt = get_non_terminal(size)
         if nt not in non_terminals:
             non_terminals.append(nt)
 
     terminals = []
-    for i in range(n_terminals):
+    for _ in range(n_terminals):
         size = random.randint(1, 10)
         t = get_terminal(size)
         if t not in terminals:
@@ -259,29 +258,27 @@ def get_bnf_string():
 
 
 def get_grammar():
-    def _get_grammar(n_non_terminals, n_terminals, rnd):
-        grammar = donkey_ge.Grammar("")
-        bnf_string = write_rule_str(n_non_terminals, n_terminals, rnd)
-        grammar.parse_bnf_string(bnf_string["bnf_string"])
+    def _get_grammar(n_non_terminals, n_terminals):
+        gramm = grammar.Grammar("")
+        bnf_string = write_rule_str(n_non_terminals, n_terminals)
+        gramm.parse_bnf_string(bnf_string["bnf_string"])
 
-        return grammar
+        return gramm
 
-    rnd = hs.random_module()
-    grammar = hs.builds(
+    gramm2 = hs.builds(
         _get_grammar,
         hs.integers(min_value=1, max_value=10),
         hs.integers(min_value=1, max_value=10),
-        rnd,
     )
     inputs = hs.lists(hs.integers(min_value=1))
 
-    return hs.fixed_dictionaries({"grammar": grammar, "inputs": inputs})
+    return hs.fixed_dictionaries({"grammar": gramm2, "inputs": inputs})
 
 
 class TestMuleGE(unittest.TestCase):
     @hypothesis.given(individuals=get_individuals())
     def test_sort_population(self, individuals):
-        sorted_individuals = donkey_ge.sort_population(individuals)
+        sorted_individuals = ge_helpers.sort_population(individuals)
         for i in range(1, len(sorted_individuals)):
             self.assertGreaterEqual(
                 sorted_individuals[i - 1].fitness, sorted_individuals[i].fitness
@@ -293,34 +290,32 @@ class TestMuleGE(unittest.TestCase):
         old_population = args["old_population"]
         population_size = args["population_size"]
         elite_size = args["elite_size"]
-        population = donkey_ge.generational_replacement(
+        pop = ge_helpers.generational_replacement(
             new_population, old_population, elite_size, population_size
         )
-        self.assertEqual(len(population), population_size)
+        self.assertEqual(len(pop), population_size)
         # TODO Checking deep copy well enough?
         for i in range(population_size):
-            self.assertIsNot(population[i], old_population[i])
+            self.assertIsNot(pop[i], old_population[i])
 
     @hypothesis.given(get_tournament_selection())
     def test_tournament_selection(self, args):
-        population = args["population"]
+        pop = args["population"]
         population_size = args["population_size"]
         tournament_size = args["tournament_size"]
-        selected_population = donkey_ge.tournament_selection(
-            population, population_size, tournament_size
-        )
+        selected_population = ge_helpers.tournament_selection(pop, population_size, tournament_size)
         self.assertEqual(len(selected_population), population_size)
         # TODO Checking reference well enough?
         for i in range(population_size):
-            self.assertIn(selected_population[i], population)
+            self.assertIn(selected_population[i], pop)
 
     @hypothesis.given(get_int_flip_mutation())
     def test_int_flip_mutation(self, args):
         individual = args["individual"]
         mutation_probability = args["mutation_probability"]
-        donkey_ge.Individual.codon_size = args["codon_size"]
+        population.Individual.codon_size = args["codon_size"]
         org_genome = individual.genome[:]
-        new_individual = donkey_ge.int_flip_mutation(individual, mutation_probability)
+        new_individual = ge_helpers.int_flip_mutation(individual, mutation_probability)
 
         self.assertIs(new_individual, individual)
         self.assertIs(new_individual.genome, individual.genome)
@@ -331,16 +326,16 @@ class TestMuleGE(unittest.TestCase):
             cnt += 1
 
         if not same:
-            self.assertEqual(new_individual.phenotype, donkey_ge.Individual.DEFAULT_PHENOTYPE)
+            self.assertEqual(new_individual.phenotype, population.Individual.DEFAULT_PHENOTYPE)
             self.assertEqual(new_individual.used_input, 0)
-            self.assertEqual(new_individual.fitness, donkey_ge.DEFAULT_FITNESS)
+            self.assertEqual(new_individual.fitness, fitness.DEFAULT_FITNESS)
 
     @hypothesis.given(get_variation())
     def test_variation(self, args):
         # TODO not pretty argument passing in get_variation...
         parents = args["population"]
         param = args
-        new_population = donkey_ge.variation(parents, param)
+        new_population = ge_helpers.variation(parents, param, param["population_size"])
         self.assertEqual(len(new_population), param["population_size"])
         self.assertIsNot(new_population, parents)
         genomes = [_.genome for _ in parents]
@@ -361,17 +356,17 @@ class TestMuleGE(unittest.TestCase):
         terminals = [_.strip() for _ in terminals]
         non_terminals = bnf_string["non_terminals"]
         rules = bnf_string["rules"]
-        grammar = donkey_ge.Grammar("")
-        grammar.parse_bnf_string(_bnf_string)
-        self.assertEqual(grammar.start_rule[0], non_terminals[0])
+        gramm = grammar.Grammar("")
+        gramm.parse_bnf_string(_bnf_string)
+        self.assertEqual(gramm.start_rule[0], non_terminals[0])
         self.assertEqual(
-            len(grammar.non_terminals),
+            len(gramm.non_terminals),
             len(non_terminals),
-            "%s != %s" % (grammar.non_terminals, non_terminals),
+            "%s != %s" % (gramm.non_terminals, non_terminals),
         )
         # TODO generate terminals so all generated terminals are
         # present in bnf_string
-        for terminal in grammar.terminals:
+        for terminal in gramm.terminals:
             try:
                 self.assertIn(terminal, terminals, "%s not in %s" % (terminal, terminals))
             except AssertionError:
@@ -382,13 +377,13 @@ class TestMuleGE(unittest.TestCase):
                 matches = [_ for _ in terminals if _ in terminal]
                 self.assertGreaterEqual(len(matches), 1)
 
-        self.assertEqual(len(grammar.rules), len(rules))
+        self.assertEqual(len(gramm.rules), len(rules))
 
     @hypothesis.given(params=get_grammar())
     def test_generate_sentence(self, params):
-        grammar = params["grammar"]
+        gramm = params["grammar"]
         inputs = params["inputs"]
-        output, used_input = grammar.generate_sentence(inputs)
+        output, used_input = gramm.generate_sentence(inputs)
         self.assertLessEqual(used_input, len(inputs))
         if output is not None:
             self.assertEqual(type(output) == str, True)
@@ -398,47 +393,48 @@ class TestMuleGE(unittest.TestCase):
     @hypothesis.given(params=get_grammar())
     def test_map_input_with_grammar(self, params):
         # TODO pass in individual instead of making it in function
-        hs.assume(len(params["inputs"]) > 0)
-        grammar = params["grammar"]
+        hypothesis.assume(len(params["inputs"]) > 0)
+        gramm = params["grammar"]
         inputs = params["inputs"]
         individual = None
         try:
-            donkey_ge.Individual.max_length = len(inputs)
-            donkey_ge.Individual.codon_size = max(inputs) + 1
-            individual = donkey_ge.Individual(inputs)
-            _individual = donkey_ge.map_input_with_grammar(individual, grammar)
+            population.Individual.max_length = len(inputs)
+            population.Individual.codon_size = max(inputs) + 1
+            individual = population.Individual(inputs)
+            _individual = ge_helpers.map_input_with_grammar(individual, gramm)
             self.assertIs(individual, _individual)
-            self.assertNotEqual(_individual.phenotype, donkey_ge.Individual.DEFAULT_PHENOTYPE)
+            self.assertNotEqual(_individual.phenotype, population.Individual.DEFAULT_PHENOTYPE)
             self.assertGreater(_individual.used_input, -1)
         except ValueError:
-            self.assertEqual(individual.phenotype, donkey_ge.Individual.DEFAULT_PHENOTYPE)
+            self.assertEqual(individual.phenotype, population.Individual.DEFAULT_PHENOTYPE)
 
     @hypothesis.given(param=get_run_param(), rnd=hs.random_module())
-    def test_run(self, param, rnd):
+    def test_run(self, param):
         hypothesis.assume(param["tournament_size"] <= param["population_size"])
         hypothesis.assume(param["elite_size"] < param["population_size"])
         try:
-            _individual = donkey_ge.run(param)
-            self.assertIsNotNone(_individual.phenotype)
+            _individual_dict = ge_run.run(param, coev=False)
+            _individual0 = _individual_dict[_individual_dict.keys()[0]]
+            self.assertIsNotNone(_individual0.phenotype)
         except ValueError as e:
             self.assertEqual("Phenotype is None", str(e))
 
     @hypothesis.given(param=get_run_param(), rnd=hs.random_module())
-    def test_search_loop(self, param, rnd):
+    def test_search_loop(self, param):
         hypothesis.assume(param["tournament_size"] <= param["population_size"])
         hypothesis.assume(param["elite_size"] < param["population_size"])
 
         # TODO too much setup, can it be refactored...
-        fitness_function = heuristics.donkey_ge.get_fitness_function(param["fitness_function"])
-        grammar = donkey_ge.Grammar(param["bnf_grammar"])
-        grammar.read_bnf_file(grammar.file_name)
-        donkey_ge.Individual.codon_size = param["codon_size"]
-        donkey_ge.Individual.max_length = param["max_length"]
-        individuals = donkey_ge.initialise_population(param["population_size"])
-        population = donkey_ge.Population(fitness_function, grammar, individuals)
+        fitness_function = ge_run.get_fitness_function(param["fitness_function"])
+        gramm = grammar.Grammar(param["bnf_grammar"])
+        gramm.read_bnf_file(gramm.file_name)
+        population.Individual.codon_size = param["codon_size"]
+        population.Individual.max_length = param["max_length"]
+        individuals = ge_helpers.initialise_population(param["population_size"])
+        pop = population.Population(fitness_function, gramm, individuals)
 
         try:
-            _individual = donkey_ge.search_loop(population, param)
+            _individual = ge_helpers.search_loop(pop, param)
             self.assertIsNotNone(_individual.phenotype)
         except ValueError as e:
             self.assertEqual("Phenotype is None", str(e))
@@ -452,8 +448,8 @@ class TestMuleGE(unittest.TestCase):
         for _file in files:
             if _file.endswith(".bnf"):
                 path = os.path.join(_dir, _file)
-                grammar = donkey_ge.Grammar(path)
-                grammar.read_bnf_file(grammar.file_name)
+                gramm = grammar.Grammar(path)
+                gramm.read_bnf_file(gramm.file_name)
                 # TDOD make assert
 
 

@@ -5,13 +5,17 @@ from the engagement environment.
 """
 from typing import List, Dict, Any, Tuple, Callable
 
+from heuristics.population import Individual
 from fitness.game_theory_game import (
     PrisonersDilemma,
     HawkAndDove,
     IntrusiveHawkAndDoveGame,
     NonIntrusiveHawkAndDoveGame,
 )
-from heuristics.donkey_ge import Individual, DEFAULT_FITNESS, FitnessFunction
+
+
+# global vars and helpers
+DEFAULT_FITNESS: float = -float("inf")
 
 
 def mean(values: List[float]) -> float:
@@ -19,6 +23,15 @@ def mean(values: List[float]) -> float:
     Return the mean of the values.
     """
     return sum(values) / len(values)
+
+
+class FitnessFunction(object):
+    """
+    Fitness function abstract class
+    """
+
+    def __call__(self, fcn_str: str, strat_str: str, cache: Dict[str, float]) -> float:
+        raise NotImplementedError("Define in subclass")
 
 
 class IteratedPrisonersDilemma(FitnessFunction):

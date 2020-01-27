@@ -4,14 +4,14 @@ from typing import Any, Dict, List
 
 import yaml
 
-from heuristics import donkey_ge, donkey_ge_coev
+from heuristics import ge_run
 
 
-__author__ = "Erik Hemberg"
+__author__ = "Bryn Reinstadler, Erik Hemberg"
 
 
 """
-Main function for donkey_ge. Parses YML config file and calls donkey_ge.
+Main function for donkey_ge. Parses YML config file and calls ge_run.
 """
 
 
@@ -63,14 +63,11 @@ def main(args: List[str]) -> Dict[str, Any]:
     Run donkey_ge.
     """
     # Parse CLI arguments
-    args = parse_arguments(args)
+    args_parsed: Dict[str, Any] = parse_arguments(args)
     # Run heuristic search
-    if args["coev"]:
-        donkey_ge_coev.run(args)
-    else:
-        donkey_ge.run(args)
+    ge_run.run(args_parsed, coev=args_parsed["coev"])
 
-    return args
+    return args_parsed
 
 
 if __name__ == "__main__":
