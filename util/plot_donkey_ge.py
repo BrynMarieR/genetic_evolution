@@ -13,11 +13,12 @@ def plot_fitness(out_path: str = ".", in_path: str = ".",) -> None:
     Plot the fitness per generation
     """
     files: List[str] = os.listdir(in_path)
+    good_files: List[str] = [i for i in files if "fitness_values.json" in i]
 
-    for _file in files:
-        # TODO: fix path to file, which is not the same for a coev fitness value
-        if _file == "donkey_ge_fitness_values.json":
+    if len(good_files) > 0:
+        for _file in good_files:
             file_path: str = os.path.join(in_path, _file)
+            plot_name = _file.replace(".json", ".pdf")
             with open(file_path, "r") as in_file:
                 data = json.load(in_file)
 
@@ -33,8 +34,9 @@ def plot_fitness(out_path: str = ".", in_path: str = ".",) -> None:
             plt.xlabel("Generation")
             plt.ylabel("Fitness")
             plt.legend()
-            plot_name = _file.replace(".json", ".pdf")
             plt.savefig(os.path.join(out_path, plot_name))
+            plt.show()
+            plt.clf()
 
 
 def plot_population_freqs(out_path: str = ".", in_path: str = ".", title: str = "") -> None:
@@ -47,6 +49,7 @@ def plot_population_freqs(out_path: str = ".", in_path: str = ".", title: str = 
     if len(good_files) > 0:
         for _file in good_files:
             file_path: str = os.path.join(in_path, _file)
+            plot_name = _file.replace(".json", ".pdf")
             with open(file_path, "r") as in_file:
                 data = json.load(in_file)
 
@@ -54,7 +57,7 @@ def plot_population_freqs(out_path: str = ".", in_path: str = ".", title: str = 
             flat_data: List[str] = [
                 strat for sub_list in data["solution_values"] for strat in sub_list
             ]
-            legend_items = set(flat_data)
+            legend_items = np.unique(np.array(flat_data))  # automatically sorts
             freq_mat = np.array(
                 [
                     [sub_list.count(item) for item in legend_items]
@@ -62,11 +65,18 @@ def plot_population_freqs(out_path: str = ".", in_path: str = ".", title: str = 
                 ]
             )
             df = pd.melt(pd.DataFrame(freq_mat, columns=legend_items))
-            df["generation"] = [i for i in range(len(data["solution_values"]))] * len(legend_items)
+            df["Generations"] = [i for i in range(len(data["solution_values"]))] * len(legend_items)
+            df["Proportion of population"] = df["value"] / (
+                len(flat_data) / len(data["solution_values"])
+            )
 
-            sns.lineplot(x="generation", y="value", hue="variable", data=df).set_title(title)
-            plot_name = _file.replace(".json", ".pdf")
+            sns.lineplot(
+                x="Generations", y="Proportion of population", hue="variable", data=df
+            ).set_title(title)
+            plt.ylim(-0.08, 1.08)
             plt.savefig(os.path.join(out_path, plot_name))
+            plt.show()
+
             plt.clf()
 
 

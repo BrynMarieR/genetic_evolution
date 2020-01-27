@@ -6,13 +6,13 @@ crossover_probability: 0.8
 mutation_probability: 0.1
 codon_size: 127
 integer_input_element_max: 1000
-elite_size: 95
+elite_size: 98
 
 populations:
   attacker:
     adversary: attacker
     bnf_grammar: "tests/grammars/simple_hawk_dove.bnf"
     fitness_function:
-      name: "IteratedHawkAndDove"
+      name: "IntrusiveHawkAndDove"
       opponent: None
       n_iterations: 1

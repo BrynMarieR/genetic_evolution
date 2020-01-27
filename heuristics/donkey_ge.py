@@ -11,9 +11,8 @@ from typing import List, Tuple, Any, Dict, Optional, DefaultDict, Sequence, Unio
 from numbers import Number
 import json
 
-__author__ = "Erik Hemberg"
+__author__ = "Bryn Reinstadler, Erik Hemberg"
 """GE implementation. Bastardization of PonyGP and PonyGE.
-
 """
 
 
