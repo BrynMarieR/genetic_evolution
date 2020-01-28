@@ -20,11 +20,13 @@ class GameTheoryGame:
         out_file_name: str = "tmp_out.json",
         payoff_dict: Any = None,
     ) -> None:
-        self.payoff_dict = payoff_dict
         self.n_iterations = n_iterations
         self.memory_size = memory_size
         self.store_stats = store_stats
         self.out_file_name = out_file_name
+        if payoff_dict is None:
+            payoff_dict = {}
+        self.payoff_dict: Dict[str, float] = payoff_dict
 
         if self.store_stats:
             with open(self.out_file_name, "w") as out_file:
