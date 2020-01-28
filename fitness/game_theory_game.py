@@ -18,9 +18,9 @@ class GameTheoryGame:
         memory_size: int = 1,
         store_stats: bool = False,
         out_file_name: str = "tmp_out.json",
+        payoff_dict: Any = None,
     ) -> None:
-        """ Constructor
-        """
+        self.payoff_dict = payoff_dict
         self.n_iterations = n_iterations
         self.memory_size = memory_size
         self.store_stats = store_stats
@@ -117,21 +117,32 @@ class PrisonersDilemma(GameTheoryGame):
 
     COOPERATE: str = "C"
     DEFECT: str = "D"
-    R: float = -1.0  # Reward
-    P: float = -2.0  # Penalty
-    S: float = -3.0  # Sucker
-    T: float = 0.0  # Temptation
-    PAYOFF: Dict[Tuple[str, str], Tuple[float, float]] = {
-        (COOPERATE, COOPERATE): (R, R),
-        (COOPERATE, DEFECT): (S, T),
-        (DEFECT, COOPERATE): (T, S),
-        (DEFECT, DEFECT): (P, P),
-    }
     DEFAULT_OUT_FILE: str = "ipd_stats.json"
+
+    def fill_in_payoff_matrix(self) -> Dict[Tuple[str, str], Tuple[float, float]]:
+        R: float = -1.0  # Reward
+        P: float = -2.0  # Penalty
+        S: float = -3.0  # Sucker
+        T: float = 0.0  # Temptation
+
+        if sorted([*self.payoff_dict]) == ["P", "R", "S", "T"]:
+            R = self.payoff_dict["R"]
+            P = self.payoff_dict["P"]
+            S = self.payoff_dict["S"]
+            T = self.payoff_dict["T"]
+
+        PAYOFF: Dict[Tuple[str, str], Tuple[float, float]] = {
+            (self.COOPERATE, self.COOPERATE): (R, R),
+            (self.COOPERATE, self.DEFECT): (S, T),
+            (self.DEFECT, self.COOPERATE): (T, S),
+            (self.DEFECT, self.DEFECT): (P, P),
+        }
+
+        return PAYOFF
 
     def get_payoff(self) -> Dict[Tuple[str, str], Tuple[float, float]]:
         """Return payoff for each strategy combination."""
-        return PrisonersDilemma.PAYOFF
+        return PrisonersDilemma.fill_in_payoff_matrix(self)
 
 
 class HawkAndDove(GameTheoryGame):
@@ -142,19 +153,28 @@ class HawkAndDove(GameTheoryGame):
 
     HAWK: str = "H"
     DOVE: str = "D"
-    V: float = 2.0
-    C: float = 10.0
-    PAYOFF: Dict[Tuple[str, str], Tuple[float, float]] = {
-        (HAWK, HAWK): ((V - C) / 2.0, (V - C) / 2.0),
-        (HAWK, DOVE): (V, 0),
-        (DOVE, HAWK): (0, V),
-        (DOVE, DOVE): (V / 2.0, V / 2.0),
-    }
     DEFAULT_OUT_FILE: str = "hd_stats.json"
+
+    def fill_in_payoff_matrix(self) -> Dict[Tuple[str, str], Tuple[float, float]]:
+        C = 10.0
+        V = 2.0
+
+        if sorted([*self.payoff_dict]) == ["C", "V"]:
+            C = self.payoff_dict["C"]
+            V = self.payoff_dict["V"]
+
+        PAYOFF: Dict[Tuple[str, str], Tuple[float, float]] = {
+            (self.HAWK, self.HAWK): ((V - C) / 2.0, (V - C) / 2.0),
+            (self.HAWK, self.DOVE): (V, 0),
+            (self.DOVE, self.HAWK): (0, V),
+            (self.DOVE, self.DOVE): (V / 2.0, V / 2.0),
+        }
+
+        return PAYOFF
 
     def get_payoff(self) -> Dict[Tuple[str, str], Tuple[float, float]]:
         """Return payoff for each strategy combination."""
-        return HawkAndDove.PAYOFF
+        return HawkAndDove.fill_in_payoff_matrix(self)
 
 
 class IntrusiveHawkAndDoveGame(GameTheoryGame):
@@ -168,33 +188,40 @@ class IntrusiveHawkAndDoveGame(GameTheoryGame):
     DOVE: str = "D"
     BOUR: str = "B"
     ANTI: str = "X"
-
-    V: float = 2.0
-    C: float = 10.0
-
-    PAYOFF: Dict[Tuple[str, str], Tuple[float, float]] = {
-        (HAWK, HAWK): ((V - C) / 2.0, (V - C) / 2.0),
-        (HAWK, BOUR): ((3 * V - C) / 4.0, (V - C) / 4.0),
-        (HAWK, ANTI): ((3 * V - C) / 4.0, (V - C) / 4.0),
-        (HAWK, DOVE): (V, 0),
-        (BOUR, HAWK): ((V - C) / 4.0, (3 * V - C) / 4.0),
-        (BOUR, BOUR): (V / 2.0, V / 2.0),
-        (BOUR, ANTI): ((2 * V - C) / 4.0, (2 * V - C) / 4.0),
-        (BOUR, DOVE): (3 * V / 4.0, V / 4.0),
-        (ANTI, HAWK): ((V - C) / 4.0, (3 * V - C) / 4.0),
-        (ANTI, BOUR): ((2 * V - C) / 4.0, (2 * V - C) / 4.0),
-        (ANTI, ANTI): (V / 2.0, V / 2.0),
-        (ANTI, DOVE): (3 * V / 4.0, V / 4.0),
-        (DOVE, HAWK): (0, V),
-        (DOVE, BOUR): (V / 4.0, 3 * V / 4.0),
-        (DOVE, ANTI): (V / 4.0, 3 * V / 4.0),
-        (DOVE, DOVE): (V / 2.0, V / 2.0),
-    }
     DEFAULT_OUT_FILE: str = "intrusive_hd_stats.json"
+
+    def fill_in_payoff_matrix(self) -> Dict[Tuple[str, str], Tuple[float, float]]:
+        C = 10.0
+        V = 2.0
+
+        if sorted([*self.payoff_dict]) == ["C", "V"]:
+            C = self.payoff_dict["C"]
+            V = self.payoff_dict["V"]
+
+        PAYOFF: Dict[Tuple[str, str], Tuple[float, float]] = {
+            (self.HAWK, self.HAWK): ((V - C) / 2.0, (V - C) / 2.0),
+            (self.HAWK, self.BOUR): ((3 * V - C) / 4.0, (V - C) / 4.0),
+            (self.HAWK, self.ANTI): ((3 * V - C) / 4.0, (V - C) / 4.0),
+            (self.HAWK, self.DOVE): (V, 0),
+            (self.BOUR, self.HAWK): ((V - C) / 4.0, (3 * V - C) / 4.0),
+            (self.BOUR, self.BOUR): (V / 2.0, V / 2.0),
+            (self.BOUR, self.ANTI): ((2 * V - C) / 4.0, (2 * V - C) / 4.0),
+            (self.BOUR, self.DOVE): (3 * V / 4.0, V / 4.0),
+            (self.ANTI, self.HAWK): ((V - C) / 4.0, (3 * V - C) / 4.0),
+            (self.ANTI, self.BOUR): ((2 * V - C) / 4.0, (2 * V - C) / 4.0),
+            (self.ANTI, self.ANTI): (V / 2.0, V / 2.0),
+            (self.ANTI, self.DOVE): (3 * V / 4.0, V / 4.0),
+            (self.DOVE, self.HAWK): (0, V),
+            (self.DOVE, self.BOUR): (V / 4.0, 3 * V / 4.0),
+            (self.DOVE, self.ANTI): (V / 4.0, 3 * V / 4.0),
+            (self.DOVE, self.DOVE): (V / 2.0, V / 2.0),
+        }
+
+        return PAYOFF
 
     def get_payoff(self) -> Dict[Tuple[str, str], Tuple[float, float]]:
         """Return payoff for each strategy combination."""
-        return IntrusiveHawkAndDoveGame.PAYOFF
+        return IntrusiveHawkAndDoveGame.fill_in_payoff_matrix(self)
 
 
 class NonIntrusiveHawkAndDoveGame(GameTheoryGame):
@@ -208,30 +235,37 @@ class NonIntrusiveHawkAndDoveGame(GameTheoryGame):
     DOVE: str = "D"
     BOUR: str = "B"
     ANTI: str = "X"
-
-    V: float = 2.0
-    C: float = 10.0
-
-    PAYOFF: Dict[Tuple[str, str], Tuple[float, float]] = {
-        (HAWK, HAWK): ((V - C) / 2.0, (V - C) / 2.0),
-        (HAWK, BOUR): ((3 * V - C) / 4.0, (V - C) / 4.0),
-        (HAWK, ANTI): ((3 * V - C) / 4.0, (V - C) / 4.0),
-        (HAWK, DOVE): (V, 0),
-        (BOUR, HAWK): ((V - C) / 4.0, (3 * V - C) / 4.0),
-        (BOUR, BOUR): (V / 2.0, V / 2.0),
-        (BOUR, ANTI): ((V - C) / 4.0, (3 * V - C) / 4.0),
-        (BOUR, DOVE): (V / 2.0, V / 2.0),
-        (ANTI, HAWK): ((V - C) / 4.0, (3 * V - C) / 4.0),
-        (ANTI, BOUR): ((3 * V - C) / 4.0, (V - C) / 4.0),
-        (ANTI, ANTI): (V / 2.0, V / 2.0),
-        (ANTI, DOVE): (V, 0),
-        (DOVE, HAWK): (0, V),
-        (DOVE, BOUR): (V / 2.0, V / 2.0),
-        (DOVE, ANTI): (0, V),
-        (DOVE, DOVE): (V / 2.0, V / 2.0),
-    }
     DEFAULT_OUT_FILE: str = "nonintrusive_hd_stats.json"
 
+    def fill_in_payoff_matrix(self) -> Dict[Tuple[str, str], Tuple[float, float]]:
+
+        C: float = 10.0
+        V: float = 2.0
+
+        if sorted([*self.payoff_dict]) == ["C", "V"]:
+            C = self.payoff_dict["C"]
+            V = self.payoff_dict["V"]
+
+        PAYOFF: Dict[Tuple[str, str], Tuple[float, float]] = {
+            (self.HAWK, self.HAWK): ((V - C) / 2.0, (V - C) / 2.0),
+            (self.HAWK, self.BOUR): ((3 * V - C) / 4.0, (V - C) / 4.0),
+            (self.HAWK, self.ANTI): ((3 * V - C) / 4.0, (V - C) / 4.0),
+            (self.HAWK, self.DOVE): (V, 0),
+            (self.BOUR, self.HAWK): ((V - C) / 4.0, (3 * V - C) / 4.0),
+            (self.BOUR, self.BOUR): (V / 2.0, V / 2.0),
+            (self.BOUR, self.ANTI): ((V - C) / 4.0, (3 * V - C) / 4.0),
+            (self.BOUR, self.DOVE): (V / 2.0, V / 2.0),
+            (self.ANTI, self.HAWK): ((V - C) / 4.0, (3 * V - C) / 4.0),
+            (self.ANTI, self.BOUR): ((3 * V - C) / 4.0, (V - C) / 4.0),
+            (self.ANTI, self.ANTI): (V / 2.0, V / 2.0),
+            (self.ANTI, self.DOVE): (V, 0),
+            (self.DOVE, self.HAWK): (0, V),
+            (self.DOVE, self.BOUR): (V / 2.0, V / 2.0),
+            (self.DOVE, self.ANTI): (0, V),
+            (self.DOVE, self.DOVE): (V / 2.0, V / 2.0),
+        }
+
+        return PAYOFF
+
     def get_payoff(self) -> Dict[Tuple[str, str], Tuple[float, float]]:
-        """Return payoff for each strategy combination."""
-        return NonIntrusiveHawkAndDoveGame.PAYOFF
+        return NonIntrusiveHawkAndDoveGame.fill_in_payoff_matrix(self)

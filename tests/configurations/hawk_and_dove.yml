@@ -12,3 +12,4 @@ fitness_function:
     name: "HawkAndDove"
     opponent: "lambda h, i: 'D'"
     n_iterations: 4
+    payoff_dict: {"V": 4.0, "C": 2.0}
