@@ -126,3 +126,18 @@ class CoevPopulation(Population):
         )
 
         return _str
+
+
+class PopulatedGraph(Population):
+    def __init__(
+        self,
+        graph: Any,
+        map_individuals_to_graph: Any,
+        fitness_function: Any,
+        grammar: Grammar,
+        individuals: List[Individual],
+    ):
+        Population.__init__(self, fitness_function, grammar, individuals)
+        Population.__init__(self, fitness_function, grammar, individuals)
+        self.graph = graph
+        self.map_individuals_to_graph = map_individuals_to_graph

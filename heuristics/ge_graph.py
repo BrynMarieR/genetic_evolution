@@ -1,7 +1,4 @@
 from typing import Tuple, List, Any
-from heuristics.population import Individual, Population
-from heuristics.grammar import Grammar
-import yaml
 
 
 class Graph(object):
@@ -49,22 +46,3 @@ class Graph(object):
 
     def __len__(self) -> int:
         return len(self.graph)
-
-    def build_graph_from_file(self, filename: str) -> None:
-        with open(filename, "r") as gfile:
-            dat = yaml.load(gfile, Loader=yaml.FullLoader)
-        self.graph = dat
-
-
-class PopulatedGraph(Graph, Population):
-    def __init__(
-        self,
-        graph: Any,
-        fitness_function: Any,
-        grammar: Grammar,
-        individuals: List[Individual],
-        map_individuals_to_graph: Any,
-    ):
-        Graph.__init__(self, graph)
-        Population.__init__(self, fitness_function, grammar, individuals)
-        self.map_individuals_to_graph = map_individuals_to_graph

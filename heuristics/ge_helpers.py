@@ -1,13 +1,14 @@
 import copy
 import random
 import time
+import json
 from collections import OrderedDict, defaultdict
 from numbers import Number
 from typing import Any, List, Dict, DefaultDict
+import numpy as np
 
 from heuristics.grammar import Grammar
-from heuristics.ge_graph import PopulatedGraph
-from heuristics.population import Individual, Population, CoevPopulation
+from heuristics.population import Individual, Population, CoevPopulation, PopulatedGraph
 from fitness.fitness import FitnessFunction, DEFAULT_FITNESS
 from util.output_util import (
     print_stats,
@@ -56,6 +57,12 @@ def map_input_with_grammar(individual: Individual, grammar: Grammar) -> Individu
     individual.used_input = n_inputs_used
 
     return individual
+
+
+def build_graph_from_file(filename: str) -> Any:
+    with open(filename, "r") as gfile:
+        dat = json.load(gfile)
+    return dat
 
 
 def initialise_population(size: int) -> List[Individual]:
@@ -167,14 +174,15 @@ def place_individuals_on_graph(population: PopulatedGraph) -> PopulatedGraph:
         population.map_individuals_to_graph = dict(zip_individuals_vertices)
     else:
         # place by fitness
+        tmp_dict = {}
         for key in graph.keys():
             neighbors_and_self = graph[key] + [key]
-            individuals_on_neighbors_and_self = population.map_individuals_to_graph[
-                neighbors_and_self
-            ]
+            individuals_on_neighbors_and_self = []
+            for node in neighbors_and_self:
+                individuals_on_neighbors_and_self.append(population.map_individuals_to_graph[node])
             fitnesses = [ind.fitness for ind in individuals_on_neighbors_and_self]
-            sorted_inds = [x for _, x in sorted(zip(fitnesses, individuals_on_neighbors_and_self))]
-            population.map_individuals_to_graph[key] = sorted_inds[0]
+            tmp_dict[key] = individuals_on_neighbors_and_self[np.argmax(fitnesses)]
+        population.map_individuals_to_graph = tmp_dict
 
     return population
 
@@ -491,8 +499,10 @@ def evaluate_fitness_spatial(population: PopulatedGraph, param: Dict[str, Any]) 
         #  calculate fitness of individual at this node
         cur_ind = population.map_individuals_to_graph[vertex]
         neighbor_indices = population.graph[vertex]
-        neighbors = population.map_individuals_to_graph[neighbor_indices]
-        evaluate_coev_spatial(cur_ind, neighbors, population.fitness_function, cache)
+        neighbors = []
+        for index in neighbor_indices:
+            neighbors.append(population.map_individuals_to_graph[index])
+        evaluate_coev_spatial(cur_ind, population.fitness_function, neighbors, cache)
 
     return population
 

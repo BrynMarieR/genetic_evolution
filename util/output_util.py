@@ -7,7 +7,6 @@ from numbers import Number
 from typing import Any, List, Dict, DefaultDict, Sequence, Tuple
 
 import heuristics.population as hpop
-import heuristics.ge_graph as hgraph
 
 
 def print_cache_stats(generation: int, param: Dict[str, Any]) -> None:
@@ -96,7 +95,7 @@ def write_run_output_coev(
 
 
 def write_spatial_output(
-    generation: int, population: hgraph.PopulatedGraph, param: Dict[str, Any],
+    generation: int, population: hpop.PopulatedGraph, param: Dict[str, Any],
 ) -> None:
     print_cache_stats(generation, param)
     out_file_name = get_out_file_name("donkey_ge_spatial", param)
@@ -111,9 +110,12 @@ def write_spatial_output(
     with open(_out_file_name, "w") as out_file:
         json.dump(population.graph, out_file, indent=1)
 
+    tmp_dict = {}
+    for k in [*population.map_individuals_to_graph]:
+        tmp_dict[k] = population.map_individuals_to_graph[k].phenotype
     _out_file_name = "%s_generation_%d_population.json" % (out_file_name, generation)
     with open(_out_file_name, "w") as out_file:
-        json.dump(population.map_individuals_to_graph, out_file, indent=1)
+        json.dump(tmp_dict, out_file, indent=1)
 
 
 def print_stats(

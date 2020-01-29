@@ -8,7 +8,6 @@ from collections import OrderedDict
 from numbers import Number
 
 import fitness.fitness as ffit
-import heuristics.ge_graph as hgraph
 import heuristics.ge_helpers as hhelp
 import heuristics.population as hpop
 import heuristics.grammar as hgrammar
@@ -129,11 +128,10 @@ def run(param: Dict[str, Any]) -> Dict[str, hpop.Individual]:
         hpop.Individual.codon_size = param["integer_input_element_max"]
 
         if spatial:
-            graph = hgraph.Graph(graph={})
-            graph.build_graph_from_file(param["graph_file"])
+            graph = hhelp.build_graph_from_file(param["graph_file"])
             individuals = hhelp.initialise_population(len(graph))
-            populated_graph = hgraph.PopulatedGraph(
-                graph, fitness_function, grammar, individuals, map_individuals_to_graph=None
+            populated_graph = hpop.PopulatedGraph(
+                graph, None, fitness_function, grammar, individuals,
             )
             best_overall_solution = hhelp.search_loop_spatial(populated_graph, param)
         else:
