@@ -50,7 +50,8 @@ class IteratedPrisonersDilemma(FitnessFunction):
         """ Initialize object
         """
         self.n_iterations = param["n_iterations"]
-        self.prisoners_dilemma = PrisonersDilemma(self.n_iterations)
+        self.payoff_dict: Dict[str, float] = param["payoff_dict"]
+        self.prisoners_dilemma = PrisonersDilemma(self.n_iterations, self.payoff_dict)
         self.opponent: Callable[[List[str], int], str] = eval(  # pylint: disable=eval-used
             param["opponent"]
         )
@@ -107,7 +108,8 @@ class IteratedHawkAndDove(FitnessFunction):
         """ Initialize object
         """
         self.n_iterations = param["n_iterations"]
-        self.hawk_and_dove = HawkAndDove(self.n_iterations)
+        self.payoff_dict: Dict[str, float] = param["payoff_dict"]
+        self.hawk_and_dove = HawkAndDove(self.n_iterations, self.payoff_dict)
         self.opponent = eval(param["opponent"])  # pylint: disable=eval-used
         self.player = lambda x, y: ""
 
@@ -162,7 +164,8 @@ class IntrusiveHawkAndDove(FitnessFunction):
         """ Initialize object
         """
         self.n_iterations = param["n_iterations"]
-        self.hawk_and_dove = IntrusiveHawkAndDoveGame(self.n_iterations)
+        self.payoff_dict: Dict[str, float] = param["payoff_dict"]
+        self.hawk_and_dove = IntrusiveHawkAndDoveGame(self.n_iterations, self.payoff_dict)
         self.opponent = eval(param["opponent"])  # pylint: disable=eval-used
         self.player = lambda x, y: ""
 
@@ -217,7 +220,8 @@ class NonIntrusiveHawkAndDove(FitnessFunction):
         """ Initialize object
         """
         self.n_iterations = param["n_iterations"]
-        self.hawk_and_dove = NonIntrusiveHawkAndDoveGame(self.n_iterations)
+        self.payoff_dict: Dict[str, float] = param["payoff_dict"]
+        self.hawk_and_dove = NonIntrusiveHawkAndDoveGame(self.n_iterations, self.payoff_dict)
         self.opponent = eval(param["opponent"])  # pylint: disable=eval-used
         self.player = lambda x, y: ""
 

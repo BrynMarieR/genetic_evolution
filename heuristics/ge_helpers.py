@@ -199,11 +199,6 @@ def search_loop_spatial(population: PopulatedGraph, param: Dict[str, Any]) -> In
     ######################
     # Evaluate fitness
     ######################
-    # (graph,
-    #  fitness_function,
-    #  grammar,
-    #  individuals,
-    #  map_individuals_to_graph = None)
 
     # make individuals using grammar
     for ind in population.individuals:

@@ -36,6 +36,7 @@ def get_fitness_function(param: Dict[str, str]) -> ffit.FitnessFunction:
     )
 
     name = param["name"]
+    print(param)
     fitness_function: ffit.FitnessFunction
     if name == "IteratedPrisonersDilemma":
         fitness_function = IteratedPrisonersDilemma(param)

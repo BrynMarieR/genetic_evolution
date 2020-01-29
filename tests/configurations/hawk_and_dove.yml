@@ -1,6 +1,7 @@
 population_size: 100
 max_length: 10
-elite_size: 14
+elite_proportion: 0.95
+elite_size: 95
 generations: 10
 tournament_size: 2
 crossover_probability: 0.8
@@ -9,7 +10,7 @@ codon_size: 127
 integer_input_element_max: 1000
 bnf_grammar: "tests/grammars/hawk_and_dove.bnf"
 fitness_function:
-    name: "HawkAndDove"
+    name: "IteratedHawkAndDove"
     opponent: "lambda h, i: 'D'"
     n_iterations: 4
-    payoff_dict: {"V": 4.0, "C": 2.0}
+    payoff_dict: {"V": 7.0, "C": 5.0}
