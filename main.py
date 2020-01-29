@@ -3,6 +3,7 @@ import argparse
 from typing import Any, Dict, List
 
 import yaml
+import math
 
 from heuristics import ge_run
 
@@ -51,6 +52,12 @@ def parse_arguments(param: List[str]) -> Dict[str, Any]:
     # Read configuration file
     with open(_args.configuration_file, "r") as cfile:
         settings: Dict[str, Any] = yaml.load(cfile, Loader=yaml.FullLoader)
+
+    # convert elite proportion to elite number
+    if "elite_proportion" in [*settings]:
+        settings["elite_size"] = math.floor(
+            settings["population_size"] * settings["elite_proportion"]
+        )
 
     # Set CLI arguments in settings
     settings["output_dir"] = _args.output_dir

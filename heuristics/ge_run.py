@@ -2,6 +2,7 @@
 import argparse
 import time
 import random
+import math
 from typing import Union, Dict, Any
 from collections import OrderedDict
 from numbers import Number
@@ -71,6 +72,10 @@ def run(param: Dict[str, Any]) -> Dict[str, hpop.Individual]:
 
     random.seed(param["seed"])
     print("Setting random seed: {} {:.5f}".format(param["seed"], random.random()))
+
+    # convert elite proportion to elite number
+    if "elite_proportion" in [*param]:
+        param["elite_size"] = math.floor(param["population_size"] * param["elite_proportion"])
 
     # Print settings
     print("ge_run settings:", param)
