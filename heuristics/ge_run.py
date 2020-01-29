@@ -2,21 +2,22 @@
 import argparse
 import time
 import random
-from typing import Union, Dict, Any, Tuple
+from typing import Union, Dict, Any
 from collections import OrderedDict
 from numbers import Number
 
-from fitness.fitness import FitnessFunction
-from heuristics.population import Individual, Population, CoevPopulation
-from heuristics.grammar import Grammar
-from heuristics.ge_helpers import initialise_population, search_loop, search_loop_coevolution
+import fitness.fitness as ffit
+import heuristics.ge_graph as hgraph
+import heuristics.ge_helpers as hhelp
+import heuristics.population as hpop
+import heuristics.grammar as hgrammar
 
 __author__ = "Bryn Reinstadler, Erik Hemberg"
 """GE implementation. Bastardization of PonyGP and PonyGE.
 """
 
 
-def get_fitness_function(param: Dict[str, str]) -> FitnessFunction:
+def get_fitness_function(param: Dict[str, str]) -> ffit.FitnessFunction:
     """Returns fitness function object.
 
     Used to construct fitness functions from the configuration parameters
@@ -34,7 +35,7 @@ def get_fitness_function(param: Dict[str, str]) -> FitnessFunction:
     )
 
     name = param["name"]
-    fitness_function: FitnessFunction
+    fitness_function: ffit.FitnessFunction
     if name == "IteratedPrisonersDilemma":
         fitness_function = IteratedPrisonersDilemma(param)
     elif name == "IteratedHawkAndDove":
@@ -49,7 +50,7 @@ def get_fitness_function(param: Dict[str, str]) -> FitnessFunction:
     return fitness_function
 
 
-def run(param: Dict[str, Any], coev: bool) -> Dict[str, Individual]:
+def run(param: Dict[str, Any]) -> Dict[str, hpop.Individual]:
     """
     Return the best solution. Create an initial
     population. Perform an evolutionary search.
@@ -61,6 +62,9 @@ def run(param: Dict[str, Any], coev: bool) -> Dict[str, Individual]:
 
     start_time = time.time()
 
+    coev = param["coev"]
+    spatial = param["spatial"]
+
     # Set random seed if not 0 is passed in as the seed
     if "seed" not in param.keys():
         param["seed"] = int(time.time())
@@ -69,7 +73,7 @@ def run(param: Dict[str, Any], coev: bool) -> Dict[str, Individual]:
     print("Setting random seed: {} {:.5f}".format(param["seed"], random.random()))
 
     # Print settings
-    print("donkey_ge settings:", param)
+    print("ge_run settings:", param)
 
     assert param["population_size"] > 1
     assert param["generations"] > 0
@@ -89,16 +93,19 @@ def run(param: Dict[str, Any], coev: bool) -> Dict[str, Individual]:
         populations: OrderedDict[str, Any] = OrderedDict()  # pylint: disable=unsubscriptable-object
         for key in param["populations"].keys():
             p_dict = param["populations"][key]
-            grammar = Grammar(p_dict["bnf_grammar"])
+            grammar = hgrammar.Grammar(p_dict["bnf_grammar"])
             grammar.read_bnf_file(grammar.file_name)
             fitness_function = get_fitness_function(p_dict["fitness_function"])
             adversary = p_dict["adversary"]
-            Individual.max_length = param["max_length"]
-            Individual.codon_size = param["integer_input_element_max"]
-            individuals = initialise_population(param["population_size"])
-            population_coev = CoevPopulation(fitness_function, grammar, adversary, key, individuals)
+            hpop.Individual.max_length = param["max_length"]
+            hpop.Individual.codon_size = param["integer_input_element_max"]
+            individuals = hhelp.initialise_population(param["population_size"])
+            population_coev = hpop.CoevPopulation(
+                fitness_function, grammar, adversary, key, individuals
+            )
             populations[key] = population_coev
-            best_overall_solution_coev = search_loop_coevolution(populations, param)
+
+        best_overall_solution_coev = hhelp.search_loop_coevolution(populations, param)
 
         # Display results
         print(
@@ -109,17 +116,24 @@ def run(param: Dict[str, Any], coev: bool) -> Dict[str, Individual]:
 
         return best_overall_solution_coev
     else:
-        grammar = Grammar(param["bnf_grammar"])
+        grammar = hgrammar.Grammar(param["bnf_grammar"])
         grammar.read_bnf_file(grammar.file_name)
         fitness_function = get_fitness_function(param["fitness_function"])
-        # These are parameters since defaults are dangerous
-        # TODO make clearer
-        Individual.max_length = param["max_length"]
-        Individual.codon_size = param["integer_input_element_max"]
-        individuals = initialise_population(param["population_size"])
+        hpop.Individual.max_length = param["max_length"]
+        hpop.Individual.codon_size = param["integer_input_element_max"]
 
-        population = Population(fitness_function, grammar, individuals)
-        best_overall_solution = search_loop(population, param)
+        if spatial:
+            graph = hgraph.Graph(graph={})
+            graph.build_graph_from_file(param["graph_file"])
+            individuals = hhelp.initialise_population(len(graph))
+            populated_graph = hgraph.PopulatedGraph(
+                graph, fitness_function, grammar, individuals, map_individuals_to_graph=None
+            )
+            best_overall_solution = hhelp.search_loop_spatial(populated_graph, param)
+        else:
+            individuals = hhelp.initialise_population(param["population_size"])
+            population = hpop.Population(fitness_function, grammar, individuals)
+            best_overall_solution = hhelp.search_loop(population, param)
 
         # Display results
         print(
@@ -129,7 +143,7 @@ def run(param: Dict[str, Any], coev: bool) -> Dict[str, Individual]:
         return {"best": best_overall_solution}
 
 
-def parse_arguments() -> Tuple[Dict[str, Union[str, bool, Number]], bool]:
+def parse_arguments() -> Dict[str, Union[str, bool, Number]]:
     """
     Returns a dictionary of the default parameters, or the ones set by
     commandline arguments.
@@ -139,7 +153,7 @@ def parse_arguments() -> Tuple[Dict[str, Union[str, bool, Number]], bool]:
     """
     # Command line arguments
     parser = argparse.ArgumentParser(description="Run ge_run")
-    # Population size
+    # Coev
     parser.add_argument(
         "--coev",
         "--coev",
@@ -147,6 +161,15 @@ def parse_arguments() -> Tuple[Dict[str, Union[str, bool, Number]], bool]:
         default=False,
         dest="coevolution",
         help="Flag to do coevolution rather than simple evolution",
+    )
+    # Spatial
+    parser.add_argument(
+        "--spatial",
+        "--spatial",
+        type=bool,
+        default=False,
+        dest="Spatial",
+        help="Flag to do evolution on a graph",
     )
     # Population size
     parser.add_argument(
@@ -248,9 +271,9 @@ def parse_arguments() -> Tuple[Dict[str, Union[str, bool, Number]], bool]:
 
     # Parse the command line arguments
     options, _args = parser.parse_args()
-    return vars(options), vars(options)["coev"]
+    return vars(options)
 
 
 if __name__ == "__main__":
-    ARGS, coev_arg = parse_arguments()
-    run(ARGS, coev_arg)
+    ARGS = parse_arguments()
+    run(ARGS)

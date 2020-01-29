@@ -6,6 +6,7 @@ from numbers import Number
 from typing import Any, List, Dict, DefaultDict
 
 from heuristics.grammar import Grammar
+from heuristics.ge_graph import PopulatedGraph
 from heuristics.population import Individual, Population, CoevPopulation
 from fitness.fitness import FitnessFunction, DEFAULT_FITNESS
 from util.output_util import print_stats, write_run_output, write_run_output_coev
@@ -148,6 +149,98 @@ def search_loop(population: Population, param: Dict[str, Any]) -> Individual:
     return best_ever
 
 
+def place_individuals_on_graph(population: PopulatedGraph) -> PopulatedGraph:
+    individuals: List[Individual] = population.individuals
+    graph: Dict[str, List[str]] = population.graph
+
+    #  TODO change update rule to work
+    if [ind.fitness for ind in individuals] == [DEFAULT_FITNESS] * len(individuals):
+        # randomize order of individuals and pair with keys/vertex labels
+        random.shuffle(individuals)
+        zip_individuals_vertices = zip([*graph], individuals)
+        # Create a dictionary from zip object
+        population.map_individuals_to_graph = dict(zip_individuals_vertices)
+    else:
+        # place by fitness
+        for key in graph.keys():
+            neighbors_and_self = graph[key] + [key]
+            individuals_on_neighbors_and_self = population.map_individuals_to_graph[
+                neighbors_and_self
+            ]
+            fitnesses = [ind.fitness for ind in individuals_on_neighbors_and_self]
+            sorted_inds = [x for _, x in sorted(zip(fitnesses, individuals_on_neighbors_and_self))]
+            population.map_individuals_to_graph[key] = sorted_inds[0]
+
+    return population
+
+
+def search_loop_spatial(population: PopulatedGraph, param: Dict[str, Any]) -> Individual:
+    """Return the best individual from the evolutionary search loop. Assumes
+    the population is initially not evaluated.
+
+    :param population: Initial populations for search
+    :type population: dict of str and Population
+    :param param: Parameters for search
+    :type param: dict
+    :return: Best individuals
+    :rtype: dict
+
+    """
+
+    start_time = time.time()
+    param["cache"] = OrderedDict()
+    stats: DefaultDict[str, List[Number]] = defaultdict(list)
+
+    ######################
+    # Evaluate fitness
+    ######################
+    # (graph,
+    #  fitness_function,
+    #  grammar,
+    #  individuals,
+    #  map_individuals_to_graph = None)
+
+    # make individuals using grammar
+    for ind in population.individuals:
+        map_input_with_grammar(ind, population.grammar)
+        assert ind.phenotype != ""
+
+    #  place individuals on map
+    place_individuals_on_graph(population)
+
+    # choose a "best-ever" [arbitrary]
+    # TODO fix best-ever in spatial
+    best_ever = population.individuals[0]
+
+    # Print the stats of the populations
+    # TODO fix to print spatial stats in a better way
+    print_stats(0, population.individuals, stats, start_time)
+
+    ####
+    # generation loop
+    ####
+
+    generation = 1
+    while generation < param["generations"]:
+        start_time = time.time()
+
+        # evaluate fitness of individual @ each node
+        population = evaluate_fitness_spatial(population, param)
+
+        # change node-individual mappings
+        place_individuals_on_graph(population)
+
+        # Print the stats of the populations
+        print_stats(generation, population.individuals, stats, start_time)
+
+        # Increase the generation counter
+        generation += 1
+
+    write_run_output(generation, stats, param)
+
+    return best_ever
+
+
 def search_loop_coevolution(
     populations: Dict[str, CoevPopulation], param: Dict[str, Any]
 ) -> Dict[str, Individual]:
@@ -277,7 +370,7 @@ def evaluate(
     return individual
 
 
-def evaluate_coev(
+def evaluate_coev_spatial(
     individual: Individual, fitness_function: Any, inds: List[Individual], cache: Dict[str, float]
 ) -> Individual:
     """Evaluates phenotype in fitness_function function and sets fitness_function.
@@ -368,11 +461,38 @@ def evaluate_fitness_coev(
         assert ind.phenotype
         if ind.phenotype != "":
             # Execute the fitness function
-            evaluate_coev(ind, fitness_function, adversaries, cache)
+            evaluate_coev_spatial(ind, fitness_function, adversaries, cache)
 
     assert n_individuals == len(individuals), "%d != %d" % (n_individuals, len(individuals))
 
     return individuals
+
+
+def evaluate_fitness_spatial(population: PopulatedGraph, param: Dict[str, Any]) -> PopulatedGraph:
+    """Perform the fitness evaluation for each individual of the population.
+
+    :param individuals:
+    :type individuals: list of Individual
+    :param grammar:
+    :type grammar: Grammar
+    :param fitness_function:
+    :type fitness_function: function
+    :param param: Other parameters
+    :type param: dict
+    :return: Evaluated individuals
+    :rtype: list of Individuals
+
+    """
+    cache = param["cache"]
+
+    for vertex in population.graph:
+        #  calculate fitness of individual at this node
+        cur_ind = population.map_individuals_to_graph[vertex]
+        neighbor_indices = population.graph[vertex]
+        neighbors = population.map_individuals_to_graph[neighbor_indices]
+        evaluate_coev_spatial(cur_ind, neighbors, population.fitness_function, cache)
+
+    return population
 
 
 def variation(parents: List[Individual], param: Dict[str, Any], num_inds: int) -> List[Individual]:

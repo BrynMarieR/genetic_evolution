@@ -38,6 +38,7 @@ def parse_arguments(param: List[str]) -> Dict[str, Any]:
         help="Path to directory for output files. E.g. " "donkey_ge_output",
     )
     parser.add_argument("--coev", action="store_true", help="Coevolution")
+    parser.add_argument("--spatial", action="store_true", help="Spatial")
 
     # the first argument of param is the filename, when running on cmd line
     # remove to pass to parser
@@ -54,6 +55,7 @@ def parse_arguments(param: List[str]) -> Dict[str, Any]:
     # Set CLI arguments in settings
     settings["output_dir"] = _args.output_dir
     settings["coev"] = _args.coev
+    settings["spatial"] = _args.spatial
 
     return settings
 
@@ -65,7 +67,7 @@ def main(args: List[str]) -> Dict[str, Any]:
     # Parse CLI arguments
     args_parsed: Dict[str, Any] = parse_arguments(args)
     # Run heuristic search
-    ge_run.run(args_parsed, coev=args_parsed["coev"])
+    ge_run.run(args_parsed)
 
     return args_parsed
 

@@ -6,8 +6,7 @@ import collections
 from numbers import Number
 from typing import Any, List, Dict, DefaultDict, Sequence, Tuple
 
-from heuristics.population import Individual, CoevPopulation
-from heuristics.ge_helpers import sort_population
+import heuristics.population as hpop
 
 
 def print_cache_stats(generation: int, param: Dict[str, Any]) -> None:
@@ -66,7 +65,7 @@ def write_run_output(
 def write_run_output_coev(
     generation: int,
     stats_dict: Dict[str, Dict[str, List[Number]]],
-    populations: Dict[str, CoevPopulation],
+    populations: Dict[str, hpop.CoevPopulation],
     param: Dict[str, Any],
 ) -> None:
     """Write run stats to files.
@@ -96,7 +95,10 @@ def write_run_output_coev(
 
 
 def print_stats(
-    generation: int, individuals: List[Individual], stats: Dict[str, List[Any]], start_time: float
+    generation: int,
+    individuals: List[hpop.Individual],
+    stats: Dict[str, List[Any]],
+    start_time: float,
 ) -> None:
     """
     Print the statistics for the generation and population.
@@ -125,7 +127,7 @@ def print_stats(
         return _ave, _std
 
     # Make sure individuals are sorted
-    individuals = sort_population(individuals)
+    individuals = sorted(individuals, key=lambda x: x.fitness, reverse=True)
     # Get the fitness values
     fitness_values: Sequence[float] = [i.get_fitness() for i in individuals]
     # Get the number of nodes

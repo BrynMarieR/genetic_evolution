@@ -3,8 +3,6 @@ import collections
 import re
 from typing import List, Tuple, Set
 
-from heuristics.population import Individual
-
 
 class Grammar(object):
     """
@@ -16,6 +14,7 @@ class Grammar(object):
     T: str = "T"  # Terminal
     rule_separator: str = "::="
     production_separator: str = "|"
+    DEFAULT_GRAMMAR_PHENOTYPE = ""
 
     def __init__(self, file_name: str) -> None:
         """Context free grammar.
@@ -174,7 +173,7 @@ class Grammar(object):
 
         # Not fully expanded
         if unexpanded_symbols:
-            return Individual.DEFAULT_PHENOTYPE, used_input
+            return self.DEFAULT_GRAMMAR_PHENOTYPE, used_input
         else:
             str_output: str = "".join(output)
             return str_output, used_input

@@ -5,7 +5,6 @@ from the engagement environment.
 """
 from typing import List, Dict, Any, Tuple, Callable
 
-from heuristics.population import Individual
 from fitness.game_theory_game import (
     PrisonersDilemma,
     HawkAndDove,
@@ -79,7 +78,7 @@ class IteratedPrisonersDilemma(FitnessFunction):
         fitness: float = mean([_[0] for _ in payoffs])
         return fitness
 
-    def coev(self, fcn_str: str, strategies: List[Individual], cache: Dict[str, float]) -> float:
+    def coev(self, fcn_str: str, strategies: List[Any], cache: Dict[str, float]) -> float:
         """ Evaluate one strategy against multiple strategies and mean expected utility (fitness).
         """
         fitnesses: List[float] = [DEFAULT_FITNESS] * len(strategies)
@@ -134,7 +133,7 @@ class IteratedHawkAndDove(FitnessFunction):
         fitness: float = mean([_[0] for _ in payoffs])
         return fitness
 
-    def coev(self, fcn_str: str, strategies: List[Individual], cache: Dict[str, float]) -> float:
+    def coev(self, fcn_str: str, strategies: List[Any], cache: Dict[str, float]) -> float:
         """ Evaluate one strategy against multiple strategies and mean expected utility (fitness).
         """
         fitnesses: List[float] = [DEFAULT_FITNESS] * len(strategies)
@@ -189,7 +188,7 @@ class IntrusiveHawkAndDove(FitnessFunction):
         fitness: float = mean([_[0] for _ in payoffs])
         return fitness
 
-    def coev(self, fcn_str: str, strategies: List[Individual], cache: Dict[str, float]) -> float:
+    def coev(self, fcn_str: str, strategies: List[Any], cache: Dict[str, float]) -> float:
         """ Evaluate one strategy against multiple strategies and mean expected utility (fitness).
         """
         fitnesses: List[float] = [DEFAULT_FITNESS] * len(strategies)
@@ -245,7 +244,7 @@ class NonIntrusiveHawkAndDove(FitnessFunction):
         fitness: float = mean([_[0] for _ in payoffs])
         return fitness
 
-    def coev(self, fcn_str: str, strategies: List[Individual], cache: Dict[str, float]) -> float:
+    def coev(self, fcn_str: str, strategies: List[Any], cache: Dict[str, float]) -> float:
         """ Evaluate one strategy against multiple strategies and mean expected utility (fitness).
         """
         fitnesses: List[float] = [DEFAULT_FITNESS] * len(strategies)
