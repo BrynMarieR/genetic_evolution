@@ -9,7 +9,12 @@ from heuristics.grammar import Grammar
 from heuristics.ge_graph import PopulatedGraph
 from heuristics.population import Individual, Population, CoevPopulation
 from fitness.fitness import FitnessFunction, DEFAULT_FITNESS
-from util.output_util import print_stats, write_run_output, write_run_output_coev
+from util.output_util import (
+    print_stats,
+    write_run_output,
+    write_run_output_coev,
+    write_spatial_output,
+)
 
 CACHE_MAX_SIZE = 100000
 
@@ -215,6 +220,7 @@ def search_loop_spatial(population: PopulatedGraph, param: Dict[str, Any]) -> In
     # Print the stats of the populations
     # TODO fix to print spatial stats in a better way
     print_stats(0, population.individuals, stats, start_time)
+    write_spatial_output(0, population, param)
 
     ####
     # generation loop
@@ -232,6 +238,7 @@ def search_loop_spatial(population: PopulatedGraph, param: Dict[str, Any]) -> In
 
         # Print the stats of the populations
         print_stats(generation, population.individuals, stats, start_time)
+        write_spatial_output(generation, population, param)
 
         # Increase the generation counter
         generation += 1
