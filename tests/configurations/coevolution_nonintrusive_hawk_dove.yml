@@ -1,27 +1,25 @@
-population_size: 4
+population_size: 100
 max_length: 100
-generations: 2
+generations: 10
 tournament_size: 2
-seed: 1
 crossover_probability: 0.8
 mutation_probability: 0.1
 codon_size: 127
 integer_input_element_max: 1000
-elite_size: 1
+elite_size: 15
 
 populations:
   attacker:
     adversary: defender
-    bnf_grammar: "tests/grammars/hawk_and_dove.bnf"
+    bnf_grammar: "tests/grammars/simple_hawk_dove.bnf"
     fitness_function:
-      name: "HawkAndDove"
+      name: "NonIntrusiveHawkAndDove"
       opponent: None
-      n_iterations: 4
-      payoff_dict: {"DEFAULT": 0}
+      n_iterations: 1
   defender:
     adversary: attacker
-    bnf_grammar: "tests/grammars/hawk_and_dove.bnf"
+    bnf_grammar: "tests/grammars/simple_hawk_dove.bnf"
     fitness_function:
-      name: "HawkAndDove"
+      name: "NonIntrusiveHawkAndDove"
       opponent: None
-      n_iterations: {"DEFAULT": 0}
+      n_iterations: 1

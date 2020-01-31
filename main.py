@@ -3,15 +3,16 @@ import argparse
 from typing import Any, Dict, List
 
 import yaml
+import math
 
-from heuristics import donkey_ge, donkey_ge_coev
+from heuristics import ge_run
 
 
-__author__ = "Erik Hemberg"
+__author__ = "Bryn Reinstadler, Erik Hemberg"
 
 
 """
-Main function for donkey_ge. Parses YML config file and calls donkey_ge.
+Main function for donkey_ge. Parses YML config file and calls ge_run.
 """
 
 
@@ -38,16 +39,30 @@ def parse_arguments(param: List[str]) -> Dict[str, Any]:
         help="Path to directory for output files. E.g. " "donkey_ge_output",
     )
     parser.add_argument("--coev", action="store_true", help="Coevolution")
+    parser.add_argument("--spatial", action="store_true", help="Spatial")
 
-    _args = parser.parse_args(param)
+    # the first argument of param is the filename, when running on cmd line
+    # remove to pass to parser
+    if len(param) > 1 and param[0] == "main.py":
+        _args = parser.parse_args(param[1:])
+    else:
+        _args = parser.parse_args(param)
 
+    print(_args)
     # Read configuration file
-    with open(_args.configuration_file, "r") as configuration_file:
-        settings: Dict[str, Any] = yaml.load(configuration_file)
+    with open(_args.configuration_file, "r") as cfile:
+        settings: Dict[str, Any] = yaml.load(cfile, Loader=yaml.FullLoader)
+
+    # convert elite proportion to elite number
+    if "elite_proportion" in [*settings]:
+        settings["elite_size"] = math.floor(
+            settings["population_size"] * settings["elite_proportion"]
+        )
 
     # Set CLI arguments in settings
     settings["output_dir"] = _args.output_dir
     settings["coev"] = _args.coev
+    settings["spatial"] = _args.spatial
 
     return settings
 
@@ -57,14 +72,11 @@ def main(args: List[str]) -> Dict[str, Any]:
     Run donkey_ge.
     """
     # Parse CLI arguments
-    args = parse_arguments(args)
+    args_parsed: Dict[str, Any] = parse_arguments(args)
     # Run heuristic search
-    if args["coev"]:
-        donkey_ge_coev.run(args)
-    else:
-        donkey_ge.run(args)
+    ge_run.run(args_parsed)
 
-    return args
+    return args_parsed
 
 
 if __name__ == "__main__":

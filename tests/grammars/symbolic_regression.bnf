@@ -1,4 +1,0 @@
-<code> ::= lambda x: <expr>
-<expr> ::= <expr> <op> <expr> | <val>
-<op> ::= * | + | -
-<val> ::= 0 | 1  | x[0] | x[1]

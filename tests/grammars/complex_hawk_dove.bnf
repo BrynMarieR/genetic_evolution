@@ -1,0 +1,9 @@
+<strategy> ::= lambda h, i: <fixed> | lambda h, i: <adaptive>
+<fixed> ::= <varying>[i % 4] | <choice>
+<varying> ::= [<choice>, <choice>, <choice>, <choice>]
+<adaptive> ::= <choice> if i == 0 else (<choice> if h[i-1] == <choice> else <choice>)
+<choice> ::= <hawk> | <dove> | <bourgeois> | <antibourgeois>
+<hawk> ::= "H"
+<dove> ::= "D"
+<bourgeois> ::= "B"
+<antibourgeois> ::= "X"
