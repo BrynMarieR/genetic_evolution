@@ -1,4 +1,4 @@
-population_size: 100
+population_size: 50
 max_length: 100
 generations: 40
 tournament_size: 2
@@ -6,7 +6,7 @@ crossover_probability: 0.8
 mutation_probability: 0.1
 codon_size: 127
 integer_input_element_max: 1000
-elite_size: 98
+elite_size: 45
 
 populations:
   attacker:
@@ -16,3 +16,4 @@ populations:
       name: "IntrusiveHawkAndDove"
       opponent: None
       n_iterations: 1
+      payoff_dict: {"V": 4, "C": 2}

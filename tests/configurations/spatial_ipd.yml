@@ -1,6 +1,6 @@
 population_size: 4
 max_length: 100
-generations: 2
+generations: 20
 tournament_size: 2
 seed: 1
 crossover_probability: 0.8
@@ -14,4 +14,4 @@ fitness_function:
   name: "IteratedPrisonersDilemma"
   opponent: None
   n_iterations: 1
-  payoff_dict: {"DEFAULT": 0}
+  payoff_dict: {"P": 0, "S": 0, "R": 1, "T": 2}
