@@ -1,6 +1,7 @@
 import json
 from typing import List, Any
 import os
+import re
 
 from matplotlib import pyplot as plt
 import numpy as np
@@ -87,17 +88,15 @@ def plot_spatial(
     Plot the population frequencies over all generations
     """
     files: List[str] = os.listdir(in_path)
-    good_files: List[str] = [i for i in files if ("spatial_generation" in i and "json" in i)]
+    good_files_unordered: List[str] = [
+        i for i in files if ("spatial_generation" in i and "json" in i)
+    ]
 
-    if len(good_files) > 0:
-        # TODO fix the hard code
-        # _file = "donkey_ge_spatial_generation_0_population.json"
-        # file_path: str = os.path.join(in_path, _file)
-        # with open(file_path, "r") as in_file:
-        #    test_data = json.load(in_file)
+    if len(good_files_unordered) > 0:
+        p = re.compile(r"\d+")
 
-        # collect data
-        # legend_items = np.unique(list(test_data.values()))
+        # order file names
+        good_files = sorted(good_files_unordered, key=lambda x: int(p.findall(x)[0]))
 
         df_data: Any = {}
 
