@@ -156,7 +156,7 @@ class HawkAndDove(GameTheoryGame):
     DEFAULT_OUT_FILE: str = "hd_stats.json"
 
     def fill_in_payoff_matrix(self) -> Dict[Tuple[str, str], Tuple[float, float]]:
-        C = 10.0
+        C = 4.0
         V = 2.0
 
         if sorted([*self.payoff_dict]) == ["C", "V"]:
@@ -191,7 +191,7 @@ class IntrusiveHawkAndDoveGame(GameTheoryGame):
     DEFAULT_OUT_FILE: str = "intrusive_hd_stats.json"
 
     def fill_in_payoff_matrix(self) -> Dict[Tuple[str, str], Tuple[float, float]]:
-        C = 10.0
+        C = 4.0
         V = 2.0
 
         if sorted([*self.payoff_dict]) == ["C", "V"]:
@@ -239,7 +239,7 @@ class NonIntrusiveHawkAndDoveGame(GameTheoryGame):
 
     def fill_in_payoff_matrix(self) -> Dict[Tuple[str, str], Tuple[float, float]]:
 
-        C: float = 10.0
+        C: float = 4.0
         V: float = 2.0
 
         if sorted([*self.payoff_dict]) == ["C", "V"]:

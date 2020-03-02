@@ -1,0 +1,17 @@
+population_size: 100
+max_length: 100
+generations: 5
+tournament_size: 2
+crossover_probability: 0.8
+mutation_probability: 0.1
+codon_size: 127
+integer_input_element_max: 1000
+elite_proportion: 0.98
+
+bnf_grammar: "tests/grammars/simple_iterated_prisoners_dilemma.bnf"
+graph_file: "tests/graphs/lattice_graph.json"
+fitness_function:
+  name: "IteratedPrisonersDilemma"
+  opponent: None
+  n_iterations: 1
+  payoff_dict: {"P": 0, "S": 0, "R": 1, "T": 2}

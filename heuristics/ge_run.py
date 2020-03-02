@@ -74,8 +74,8 @@ def run(param: Dict[str, Any]) -> Dict[str, hpop.Individual]:
     print("Setting random seed: {} {:.5f}".format(param["seed"], random.random()))
 
     # convert elite proportion to elite number
-    if "elite_proportion" in [*param]:
-        param["elite_size"] = math.floor(param["population_size"] * param["elite_proportion"])
+    if "elite_prop" in [*param]:
+        param["elite_size"] = math.floor(param["population_size"] * param["elite_prop"])
 
     # Print settings
     print("ge_run settings:", param)
@@ -120,31 +120,27 @@ def run(param: Dict[str, Any]) -> Dict[str, hpop.Individual]:
         )
 
         return best_overall_solution_coev
+
+    grammar = hgrammar.Grammar(param["bnf_grammar"])
+    grammar.read_bnf_file(grammar.file_name)
+    fitness_function = get_fitness_function(param["fitness_function"])
+    hpop.Individual.max_length = param["max_length"]
+    hpop.Individual.codon_size = param["integer_input_element_max"]
+
+    if spatial:
+        graph = hhelp.build_graph_from_file(param["graph_file"])
+        individuals = hhelp.initialise_population(len(graph))
+        populated_graph = hpop.PopulatedGraph(graph, None, fitness_function, grammar, individuals,)
+        best_overall_solution = hhelp.search_loop_spatial(populated_graph, param)
     else:
-        grammar = hgrammar.Grammar(param["bnf_grammar"])
-        grammar.read_bnf_file(grammar.file_name)
-        fitness_function = get_fitness_function(param["fitness_function"])
-        hpop.Individual.max_length = param["max_length"]
-        hpop.Individual.codon_size = param["integer_input_element_max"]
+        individuals = hhelp.initialise_population(param["population_size"])
+        population = hpop.Population(fitness_function, grammar, individuals)
+        best_overall_solution = hhelp.search_loop(population, param)
 
-        if spatial:
-            graph = hhelp.build_graph_from_file(param["graph_file"])
-            individuals = hhelp.initialise_population(len(graph))
-            populated_graph = hpop.PopulatedGraph(
-                graph, None, fitness_function, grammar, individuals,
-            )
-            best_overall_solution = hhelp.search_loop_spatial(populated_graph, param)
-        else:
-            individuals = hhelp.initialise_population(param["population_size"])
-            population = hpop.Population(fitness_function, grammar, individuals)
-            best_overall_solution = hhelp.search_loop(population, param)
+    # Display results
+    print("Time: {:.3f} Best solution:{}".format(time.time() - start_time, best_overall_solution))
 
-        # Display results
-        print(
-            "Time: {:.3f} Best solution:{}".format(time.time() - start_time, best_overall_solution)
-        )
-
-        return {"best": best_overall_solution}
+    return {"best": best_overall_solution}
 
 
 def parse_arguments() -> Dict[str, Union[str, bool, Number]]:

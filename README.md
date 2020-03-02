@@ -17,28 +17,36 @@ Paths are relative the repository root.
 
 See [tutorials](tutorials). The [tests](tests) can also help understand the program.
 
-### One way evolutionary search
+### Simple evolutionary search
 
-Find a symbolic regression, i.e. a symbolic expression that matches the input and output.
+A population can be evolved against a single individual. For example, in an iterated prisoner's dilemma, a population of players can play against a player who is Always Defect.
 
-
-#### Symbolic Expression
 ```
-python main.py -f tests/configurations/symbolic_regression.yml -o results
+python main.py -f tests/configurations/simple_configs/iterated_prisoners_dilemma.yml -o results
 ```
 
-#### Exemplars
+### Single population co-evolutionary search
+
+A population can be evolved against itself, with players from the population playing others from the same population.
+
 ```
-python main.py -f tests/configurations/exemplars.yml -o results
+python main.py -f tests/configurations/singlepop_coev_configs/singlepop_ipd.yml -o results --coev
 ```
 
 ### Two way evolutionary search - Coevolutionary
 
-#### Symbolic Regression
+Two or more populations with different strategies may also be evolved against each other.
 
-The adversaries are coupled, i.e. dependent on each other.
 ```
-python main.py -f tests/configurations/coevolution_symbolic_regression.yml -o results --coev
+python main.py -f tests/configurations/multipop_coev_configs/coevolution_nonintrusive_hawk_dove.yml -o results --coev
+```
+
+### Spatial evolutionary search
+
+Finally, a population may play against itself in a spatial setting. A variety of pre-built graphs are available in the library. Players play their neighbors on the graph in this deterministic game.
+
+```
+python main.py -f tests/spatial_configs/multipop_coev_configs/spatial_intrusive_hd.yml.yml -o results --spatial
 ```
 
 ### `donkey_ge` output
@@ -46,18 +54,11 @@ python main.py -f tests/configurations/coevolution_symbolic_regression.yml -o re
 `donkey_ge` prints some information to `stdout` regarding `settings` and
 search progress for each iteration, see `donkey_ge.py:print_stats`. 
 
-The output files have each generation as a list element, and each individual separated by a `,`. They are written to:
-```
-donkey_ge_*_fitness_values.json
-donkey_ge_*_length_values.json
-donkey_ge_*_size_values.json
-donkey_ge_*_solution_values.json
-```
+The output files have each generation as a list element, and each individual separated by a `,`, except where otherwise specified. Spatial games have special output. These data are written to a variety of output files depending on the settings.
 
 ### Usage
 ```
-python main.py -h
-usage: main.py [-h] -f CONFIGURATION_FILE [-o OUTPUT_DIR] [--coev]
+usage: main.py [-h] -f CONFIGURATION_FILE [-o OUTPUT_DIR] [--coev] [--spatial]
 
 Run donkey_ge
 
@@ -69,8 +70,8 @@ optional arguments:
   -o OUTPUT_DIR, --output_dir OUTPUT_DIR
                         Path to directory for output files. E.g.
                         donkey_ge_output
-  --coev           Coevolution
-  Use multiprocessing for fitness evaluation
+  --coev                Coevolution
+  --spatial             Spatial
 ```
 
 ### Settings
